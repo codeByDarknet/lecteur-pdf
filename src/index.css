@@ -1,0 +1,136 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #fbfbfb;
+    --foreground: #18181b;
+    --header-bg: #f4f4f5;
+    --toolbar-bg: #ececee;
+    --viewer-bg: #e4e4e7;
+    --sidebar-bg: #f4f4f5;
+    --tab-active-bg: #ffffff;
+    --muted: #f4f4f5;
+    --muted-foreground: #71717a;
+    --accent: #e4e4e7;
+    --accent-foreground: #18181b;
+    --border: #d4d4d8;
+    --ring: #a1a1aa;
+    --card: #ffffff;
+    --card-foreground: #18181b;
+    --popover: #ffffff;
+    --popover-foreground: #18181b;
+    --primary: #18181b;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f4f5;
+    --secondary-foreground: #18181b;
+    --scrollbar-bg: #f4f4f5;
+    --scrollbar-thumb: #d4d4d8;
+    --scrollbar-thumb-hover: #a1a1aa;
+  }
+
+  .dark {
+    --background: #0a0a0a;
+    --foreground: #fafafa;
+    --header-bg: #0a0a0a;
+    --toolbar-bg: #111111;
+    --viewer-bg: #1a1a1a;
+    --sidebar-bg: #0e0e0e;
+    --tab-active-bg: #1a1a1a;
+    --muted: #1a1a1a;
+    --muted-foreground: #a1a1a1;
+    --accent: #262626;
+    --accent-foreground: #fafafa;
+    --border: #2e2e2e;
+    --ring: #404040;
+    --card: #141414;
+    --card-foreground: #fafafa;
+    --popover: #141414;
+    --popover-foreground: #fafafa;
+    --primary: #fafafa;
+    --primary-foreground: #0a0a0a;
+    --secondary: #1a1a1a;
+    --secondary-foreground: #fafafa;
+    --scrollbar-bg: #0a0a0a;
+    --scrollbar-thumb: #404040;
+    --scrollbar-thumb-hover: #525252;
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* react-pdf text layer */
+.react-pdf__Page__textContent {
+  user-select: text !important;
+}
+
+.react-pdf__Page__textContent span::selection {
+  background: rgba(59, 130, 246, 0.3);
+}
+
+/* Highlight styles */
+.pdf-highlight-yellow {
+  background-color: rgba(250, 204, 21, 0.35) !important;
+}
+
+.pdf-highlight-green {
+  background-color: rgba(74, 222, 128, 0.35) !important;
+}
+
+.pdf-highlight-blue {
+  background-color: rgba(96, 165, 250, 0.35) !important;
+}
+
+.pdf-highlight-pink {
+  background-color: rgba(244, 114, 182, 0.35) !important;
+}
+
+/* Search match highlight */
+.search-match {
+  background-color: rgba(250, 204, 21, 0.4) !important;
+  border-radius: 2px;
+}
+
+.search-match-active {
+  background-color: rgba(249, 115, 22, 0.6) !important;
+  border-radius: 2px;
+}
+
+/* Panel resize handle */
+[data-panel-group-direction="horizontal"] [data-resize-handle-active],
+[data-panel-group-direction="vertical"] [data-resize-handle-active] {
+  background-color: #3b82f6 !important;
+}

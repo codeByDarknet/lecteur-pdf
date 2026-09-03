@@ -1,0 +1,14 @@
+appId: com.lecteurpdf.ubuntu
+productName: Lecteur PDF
+directories:
+  buildResources: build
+  output: release
+files:
+  - dist
+  - dist-electron
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Office
+  icon: build/icon.png
