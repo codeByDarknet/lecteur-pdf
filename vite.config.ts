@@ -4,6 +4,8 @@ import electron from 'vite-plugin-electron/simple'
 import path from 'path'
 
 export default defineConfig({
+  // Chemins relatifs : l'app packagée charge index.html via file://
+  base: './',
   plugins: [
     react(),
     electron({
