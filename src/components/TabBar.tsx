@@ -56,12 +56,15 @@ export function TabBar({
   }
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault()
     setDragOverIndex(null)
+    const raw = e.dataTransfer.getData('application/pdf-tab')
+    // Pas un onglet (ex : fichiers depuis l'explorateur) : laisser la barre gérer
+    if (!raw) return
+    e.preventDefault()
+    e.stopPropagation()
 
     try {
-      const data = JSON.parse(e.dataTransfer.getData('application/pdf-tab'))
-      const { tabId, panelId: sourcePanelId, tabIndex: sourceIndex } = data
+      const { tabId, panelId: sourcePanelId, tabIndex: sourceIndex } = JSON.parse(raw)
 
       if (sourcePanelId === panelId) {
         // Reorder within same panel
@@ -78,7 +81,6 @@ export function TabBar({
   }
 
   const handleDropOnBar = (e: React.DragEvent) => {
-    e.preventDefault()
     setDragOverIndex(null)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -90,18 +92,26 @@ export function TabBar({
         }
       }
       if (droppedFiles.length > 0) {
+        e.preventDefault()
+        e.stopPropagation()
         onDropFiles?.(droppedFiles)
-        return
       }
+      return
     }
 
+    const raw = e.dataTransfer.getData('application/pdf-tab')
+    if (!raw) return
+    e.preventDefault()
+    e.stopPropagation()
+
     try {
-      const data = JSON.parse(e.dataTransfer.getData('application/pdf-tab'))
-      const { tabId, panelId: sourcePanelId } = data
+      const { tabId, panelId: sourcePanelId, tabIndex: sourceIndex } = JSON.parse(raw)
 
       if (sourcePanelId !== panelId) {
         // Move to end of this panel
-        onMoveTab(sourcePanelId, panelId, tabs.length)
+        onMoveTab(sourcePanelId, tabId, tabs.length)
+      } else if (sourceIndex !== tabs.length - 1) {
+        onReorderTabs(sourceIndex, tabs.length - 1)
       }
     } catch (err) {
       console.error('Drop error:', err)
