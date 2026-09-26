@@ -1,6 +1,19 @@
 import { create } from 'zustand'
 import type { PdfTab, Panel, SplitDirection } from '@/types'
 import { generateId } from '@/lib/utils'
+import { clearPdfCache } from '@/lib/fileCache'
+
+// Libère le cache (et les blob URLs) des fichiers qui ne sont plus ouverts dans aucun onglet
+const releaseClosedFiles = (before: Panel[], after: Panel[]) => {
+  const stillOpen = new Set(after.flatMap((p) => p.tabs.map((t) => t.filePath)))
+  for (const panel of before) {
+    for (const tab of panel.tabs) {
+      if (stillOpen.has(tab.filePath)) continue
+      clearPdfCache(tab.filePath)
+      if (tab.filePath.startsWith('blob:')) URL.revokeObjectURL(tab.filePath)
+    }
+  }
+}
 
 const createDefaultPanel = (): Panel => ({
   id: generateId(),
@@ -85,6 +98,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   removePanel: (panelId) => {
+    const before = get().panels
     set((state) => {
       const remaining = state.panels.filter((p) => p.id !== panelId)
       if (remaining.length === 0) {
@@ -96,6 +110,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         activePanelId: state.activePanelId === panelId ? remaining[0].id : state.activePanelId,
       }
     })
+    releaseClosedFiles(before, get().panels)
   },
 
   setActivePanel: (panelId) => set({ activePanelId: panelId }),
@@ -126,6 +141,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   closeTab: (panelId, tabId) => {
+    const before = get().panels
     set((state) => ({
       panels: state.panels.map((panel) => {
         if (panel.id !== panelId) return panel
@@ -140,6 +156,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         return { ...panel, tabs: newTabs, activeTabId: newActiveTabId }
       }),
     }))
+    releaseClosedFiles(before, get().panels)
   },
 
   setActiveTab: (panelId, tabId) => {
