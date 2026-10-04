@@ -3,6 +3,9 @@ import type { PdfTab, Panel, SplitDirection } from '@/types'
 import { generateId } from '@/lib/utils'
 import { clearPdfCache } from '@/lib/fileCache'
 
+export const MIN_ZOOM = 0.25
+export const MAX_ZOOM = 3
+
 // Libère le cache (et les blob URLs) des fichiers qui ne sont plus ouverts dans aucun onglet
 const releaseClosedFiles = (before: Panel[], after: Panel[]) => {
   const stillOpen = new Set(after.flatMap((p) => p.tabs.map((t) => t.filePath)))
@@ -245,7 +248,7 @@ export const useAppStore = create<AppState>((set, get) => ({
           ? {
               ...panel,
               tabs: panel.tabs.map((tab) =>
-                tab.id === tabId ? { ...tab, zoom: Math.max(0.25, Math.min(3, zoom)) } : tab
+                tab.id === tabId ? { ...tab, zoom: Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom)) } : tab
               ),
             }
           : panel

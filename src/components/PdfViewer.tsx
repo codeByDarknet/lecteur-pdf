@@ -7,7 +7,7 @@ import { SearchBar } from './SearchBar'
 import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { LazyPdfPage } from './LazyPdfPage'
 import { getCachedPdfData } from '@/lib/fileCache'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, MIN_ZOOM, MAX_ZOOM } from '@/store/useAppStore'
 import type { PdfTab } from '@/types'
 
 interface PdfViewerProps {
@@ -18,6 +18,8 @@ interface PdfViewerProps {
 export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const { setCurrentPage, setTotalPages, setZoom, toggleThumbnails, addPanel } = useAppStore()
   const panel = useAppStore((s) => s.panels.find((p) => p.id === panelId))
+  // Seul l'onglet visible du panel actif réagit aux raccourcis clavier
+  const isActiveViewer = useAppStore((s) => s.activePanelId === panelId) && panel?.activeTabId === tab.id
   const [fileData, setFileData] = useState<Uint8Array | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
@@ -114,25 +116,32 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
     scrollToPage(page)
   }
 
-  // Keyboard shortcuts
+  // Keyboard shortcuts (ref pour toujours appeler les handlers à jour)
+  const shortcutHandlersRef = useRef({ handleZoomIn, handleZoomOut, handleZoomFit })
+  shortcutHandlersRef.current = { handleZoomIn, handleZoomOut, handleZoomFit }
+
   useEffect(() => {
+    if (!isActiveViewer) return
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.key === 'f') {
+      if (!e.ctrlKey) return
+      const handlers = shortcutHandlersRef.current
+      if (e.key.toLowerCase() === 'f') {
         e.preventDefault()
         setShowSearch(true)
-      }
-      if (e.ctrlKey && e.key === '=') {
+      } else if (e.key === '=' || e.key === '+') {
         e.preventDefault()
-        handleZoomIn()
-      }
-      if (e.ctrlKey && e.key === '-') {
+        handlers.handleZoomIn()
+      } else if (e.key === '-') {
         e.preventDefault()
-        handleZoomOut()
+        handlers.handleZoomOut()
+      } else if (e.key === '0') {
+        e.preventDefault()
+        handlers.handleZoomFit()
       }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-   }, [tab.zoom])
+  }, [isActiveViewer])
 
   // Container width observation for automatic responsive resizing
   const [containerWidth, setContainerWidth] = useState<number>(0)
@@ -181,7 +190,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
         e.preventDefault()
         e.stopPropagation()
         const zoomDelta = e.deltaY < 0 ? 0.1 : -0.1
-        const nextZoom = Math.max(0.2, Math.min(3.5, Math.round((tab.zoom + zoomDelta) * 10) / 10))
+        const nextZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, Math.round((tab.zoom + zoomDelta) * 10) / 10))
         setZoom(panelId, tab.id, nextZoom)
       }
     }
