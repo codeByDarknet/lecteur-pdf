@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Lecteur PDF — gratuit et open source</title>
+  <meta name="description" content="Lecteur PDF gratuit et open source pour Windows, macOS et Linux. Onglets, panneaux côte à côte, recherche dans tout le document et reprise de lecture.">
+  <meta property="og:title" content="Lecteur PDF — gratuit et open source">
+  <meta property="og:description" content="Lisez et comparez vos PDF côte à côte. Gratuit, sans compte, pour Windows, macOS et Linux.">
+  <meta property="og:image" content="https://codebydarknet.github.io/lecteur-pdf/assets/capture-sombre.png">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #162041;
+      --coral: #FF6C51;
+      --yellow: #F3CC4B;
+      --lav: #B9BEFF;
+      --lav-dark: #566CC3;
+      --bg: #FFFBF4;
+      --surface: #FFFFFF;
+      --text: #162041;
+      --muted: #55607f;
+      --border: #162041;
+      --soft-border: #e6e1d6;
+      --shadow: 6px 6px 0 var(--navy);
+      --radius: 18px;
+      --max: 1120px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f1530;
+        --surface: #182042;
+        --text: #F4F2EC;
+        --muted: #aab1cf;
+        --border: #F4F2EC;
+        --soft-border: #2a3463;
+        --shadow: 6px 6px 0 #000;
+      }
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, sans-serif; line-height: 1.1; margin: 0; }
+    a { color: inherit; }
+    img { max-width: 100%; display: block; }
+    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 16px; }
+
+    /* Navigation */
+    nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--soft-border); }
+    nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; }
+    .brand { white-space: nowrap; }
+    .brand img { width: 36px; height: 36px; }
+    @media (max-width: 420px) { nav .wrap { gap: 12px; } nav .links { gap: 14px; } }
+    nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
+    nav .links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 15px; }
+    nav .links a:hover { color: var(--text); }
+    @media (max-width: 640px) { nav .links a.optional { display: none; } }
+
+    /* Boutons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 14px 22px; border-radius: 14px; border: 2.5px solid var(--navy);
+      font-weight: 600; text-decoration: none; cursor: pointer; font-size: 16px;
+      transition: transform .12s ease, box-shadow .12s ease;
+    }
+    .btn-primary { background: var(--coral); color: #fff; box-shadow: 4px 4px 0 var(--navy); }
+    .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--navy); }
+    .btn-ghost { background: var(--surface); color: var(--text); border-color: var(--border); }
+    .btn-ghost:hover { background: color-mix(in srgb, var(--lav) 30%, var(--surface)); }
+    .btn svg { width: 20px; height: 20px; flex: none; }
+    .btn small { display: block; font-weight: 500; opacity: .85; font-size: 12px; }
+
+    /* Hero */
+    .hero { padding: 72px 0 40px; text-align: center; position: relative; overflow: hidden; }
+    .hero .logo { width: 132px; height: 132px; margin: 0 auto 20px; animation: float 5s ease-in-out infinite; }
+    @keyframes float { 50% { transform: translateY(-8px) rotate(-2deg); } }
+    @media (prefers-reduced-motion: reduce) { .hero .logo { animation: none; } }
+    .pill { display: inline-block; padding: 4px 14px; border-radius: 999px; background: var(--yellow); color: var(--navy); font-weight: 600; font-size: 13px; border: 2px solid var(--navy); margin-bottom: 18px; }
+    .hero h1 { font-size: clamp(40px, 7vw, 76px); font-weight: 800; letter-spacing: -1.5px; }
+    .hero h1 mark { background: linear-gradient(transparent 58%, var(--yellow) 58%, var(--yellow) 92%, transparent 92%); color: inherit; padding: 0 4px; }
+    .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 640px; margin: 18px auto 32px; }
+    .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .version { margin-top: 14px; color: var(--muted); font-size: 14px; }
+
+    .shot { margin: 56px auto 0; max-width: 1040px; border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden; box-shadow: 10px 10px 0 var(--navy); background: var(--navy); }
+    .shot img { width: 100%; height: auto; }
+    .shot .light { display: none; }
+    @media (prefers-color-scheme: light) { .shot .dark { display: none; } .shot .light { display: block; } }
+
+    /* Sections */
+    section { padding: 80px 0; }
+    .section-title { text-align: center; margin-bottom: 48px; }
+    .section-title h2 { font-size: clamp(32px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1px; }
+    .section-title p { color: var(--muted); max-width: 600px; margin: 12px auto 0; font-size: 18px; }
+
+    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 22px; }
+    .feature { background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+    .feature .icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; border: 2.5px solid var(--navy); margin-bottom: 18px; color: var(--navy); }
+    .feature .icon svg { width: 26px; height: 26px; }
+    .feature h3 { font-size: 22px; margin-bottom: 8px; }
+    .feature p { margin: 0; color: var(--muted); }
+    .c-coral { background: var(--coral); } .c-yellow { background: var(--yellow); } .c-lav { background: var(--lav); }
+
+    /* Raccourcis */
+    .shortcuts { max-width: 640px; margin: 0 auto; background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+    .shortcuts div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 22px; border-top: 1px solid var(--soft-border); }
+    .shortcuts div:first-child { border-top: 0; }
+    kbd { font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 6px 9px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); white-space: nowrap; }
+
+    /* Téléchargements */
+    #telecharger { background: var(--navy); color: #F4F2EC; }
+    #telecharger .section-title p { color: #c4c9e4; }
+    .platforms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 22px; }
+    .platform { background: #1d2752; border: 2.5px solid #3a4785; border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 12px; }
+    .platform.detected { border-color: var(--yellow); box-shadow: 0 0 0 4px color-mix(in srgb, var(--yellow) 30%, transparent); }
+    .platform header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .platform header svg { width: 32px; height: 32px; }
+    .platform h3 { font-size: 26px; }
+    .platform .badge { margin-left: auto; font-size: 12px; font-weight: 600; background: var(--yellow); color: var(--navy); padding: 3px 10px; border-radius: 999px; display: none; }
+    .platform.detected .badge { display: inline-block; }
+    .dl { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; border-radius: 12px; background: #263166; text-decoration: none; color: #fff; border: 2px solid transparent; transition: border-color .12s, background .12s; }
+    .dl:hover { border-color: var(--coral); background: #2c3974; }
+    .dl strong { display: block; font-weight: 600; }
+    .dl span { font-size: 13px; color: #b9c0e3; }
+    .dl svg { width: 20px; height: 20px; flex: none; color: var(--coral); }
+    .platform .hint { font-size: 13.5px; color: #b9c0e3; margin: 6px 0 0; }
+    .platform code, .faq code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(127,127,127,.18); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
+    .all-releases { text-align: center; margin-top: 36px; color: #c4c9e4; }
+    .all-releases a { color: var(--yellow); }
+
+    /* Open source */
+    .oss { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
+    @media (max-width: 820px) { .oss { grid-template-columns: 1fr; } }
+    .oss h2 { font-size: clamp(32px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .oss p { color: var(--muted); font-size: 18px; }
+    .terminal { background: #0b0f22; color: #e8e8f0; border: 3px solid var(--navy); border-radius: var(--radius); padding: 22px; font: 14px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+    .terminal .p { color: var(--coral); user-select: none; }
+    .terminal .c { color: #7c86b8; }
+
+    /* FAQ */
+    .faq { max-width: 760px; margin: 0 auto; display: grid; gap: 14px; }
+    details { background: var(--surface); border: 2.5px solid var(--border); border-radius: 14px; padding: 4px 22px; }
+    summary { cursor: pointer; font-weight: 600; padding: 14px 0; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+    summary::-webkit-details-marker { display: none; }
+    summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--coral); }
+    details[open] summary::after { content: "−"; }
+    details p { margin: 0 0 16px; color: var(--muted); }
+
+    footer { border-top: 1px solid var(--soft-border); padding: 36px 0; color: var(--muted); font-size: 14px; }
+    footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
+    footer a { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <nav>
+    <div class="wrap">
+      <a class="brand" href="#"><img src="assets/logo.svg" alt="">Lecteur PDF</a>
+      <div class="links">
+        <a class="optional" href="#fonctionnalites">Fonctionnalités</a>
+        <a class="optional" href="#faq">FAQ</a>
+        <a href="https://github.com/codeByDarknet/lecteur-pdf">GitHub</a>
+        <a class="btn btn-primary" style="padding:8px 16px;font-size:14px" href="#telecharger">Télécharger</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap">
+      <img class="logo" src="assets/logo.svg" alt="Logo de Lecteur PDF">
+      <span class="pill">Gratuit · Open source · Sans compte</span>
+      <h1>Lisez vos PDF,<br><mark>côte à côte</mark>.</h1>
+      <p class="lead">Un lecteur PDF rapide et léger, avec des onglets, des panneaux multiples et la recherche dans tout le document. Pour Windows, macOS et Linux.</p>
+      <div class="cta">
+        <a class="btn btn-primary" id="main-download" href="#telecharger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          <span id="main-download-label">Télécharger gratuitement</span>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/codeByDarknet/lecteur-pdf">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+          Voir le code source
+        </a>
+      </div>
+      <p class="version" id="version">Windows · macOS · Linux</p>
+
+      <div class="shot">
+        <img class="dark" src="assets/capture-sombre.png" width="1920" height="1040" alt="Lecteur PDF en thème sombre : deux documents affichés côte à côte avec les miniatures">
+        <img class="light" src="assets/capture-clair.png" width="1920" height="1040" alt="Lecteur PDF en thème clair : recherche d'un mot surligné dans le document">
+      </div>
+    </div>
+  </header>
+
+  <section id="fonctionnalites">
+    <div class="wrap">
+      <div class="section-title">
+        <h2>Tout ce qu'il faut, rien de trop</h2>
+        <p>Pensé pour lire, comparer et retrouver une information sans perdre de temps.</p>
+      </div>
+      <div class="features">
+        <article class="feature">
+          <div class="icon c-coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></div>
+          <h3>Panneaux côte à côte</h3>
+          <p>Scindez la fenêtre pour comparer deux documents, ou deux pages du même document, sans jongler entre les fenêtres.</p>
+        </article>
+        <article class="feature">
+          <div class="icon c-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18"/><path d="M3 5h6l2 4"/><rect x="3" y="5" width="18" height="15" rx="2"/></svg></div>
+          <h3>Onglets</h3>
+          <p>Ouvrez autant de PDF que vous voulez. Glissez un onglet d'un panneau à l'autre pour réorganiser votre espace.</p>
+        </article>
+        <article class="feature">
+          <div class="icon c-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
+          <h3>Recherche dans tout le document</h3>
+          <p>Chaque occurrence est surlignée et vous passez de l'une à l'autre en un clic, même sur des centaines de pages.</p>
+        </article>
+        <article class="feature">
+          <div class="icon c-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div>
+          <h3>Reprise de lecture</h3>
+          <p>Fermez l'application, rouvrez-la : vos onglets, vos panneaux et la page où vous en étiez sont restaurés.</p>
+        </article>
+        <article class="feature">
+          <div class="icon c-coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
+          <h3>Miniatures et zoom</h3>
+          <p>Naviguez avec les miniatures des pages, zoomez avec Ctrl + molette. Les pages se chargent au fil du défilement pour rester fluide.</p>
+        </article>
+        <article class="feature">
+          <div class="icon c-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div>
+          <h3>Thème clair ou sombre</h3>
+          <p>Un thème sombre reposant pour lire le soir, un thème clair pour la journée. Et un double-clic sur un PDF suffit à l'ouvrir.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="section-title">
+        <h2>Au clavier</h2>
+        <p>Les raccourcis s'appliquent au panneau actif.</p>
+      </div>
+      <div class="shortcuts">
+        <div><span>Rechercher dans le document</span><kbd>Ctrl + F</kbd></div>
+        <div><span>Zoomer / dézoomer</span><span><kbd>Ctrl + +</kbd> <kbd>Ctrl + −</kbd></span></div>
+        <div><span>Revenir à 100 %</span><kbd>Ctrl + 0</kbd></div>
+        <div><span>Zoom à la souris</span><kbd>Ctrl + molette</kbd></div>
+        <div><span>Occurrence suivante / précédente</span><span><kbd>Entrée</kbd> <kbd>Maj + Entrée</kbd></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="telecharger">
+    <div class="wrap">
+      <div class="section-title">
+        <h2>Télécharger</h2>
+        <p>Gratuit, sans publicité et sans compte. Choisissez votre système.</p>
+      </div>
+      <div class="platforms">
+        <article class="platform" data-os="windows">
+          <header>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10 4.5v7H3zM11 4.3 21 3v8.5H11zM3 12.5h7v7l-7-1zM11 12.5h10V21l-10-1.4z"/></svg>
+            <h3>Windows</h3><span class="badge">Votre système</span>
+          </header>
+          <a class="dl" data-file="Lecteur-PDF-Windows-Setup.exe">
+            <div><strong>Installateur</strong><span>Windows 10 et 11 · 64 bits · .exe</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <a class="dl" data-file="Lecteur-PDF-Windows-Portable.exe">
+            <div><strong>Version portable</strong><span>Sans installation, à lancer depuis une clé USB</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <p class="hint">Si Windows affiche « Windows a protégé votre ordinateur », cliquez sur <b>Informations complémentaires</b> puis <b>Exécuter quand même</b>.</p>
+        </article>
+
+        <article class="platform" data-os="mac">
+          <header>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1ZM13.9 4.9c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5Z"/></svg>
+            <h3>macOS</h3><span class="badge">Votre système</span>
+          </header>
+          <a class="dl" data-file="Lecteur-PDF-macOS-arm64.dmg">
+            <div><strong>Apple Silicon</strong><span>Mac M1, M2, M3, M4… · .dmg</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <a class="dl" data-file="Lecteur-PDF-macOS-x64.dmg">
+            <div><strong>Intel</strong><span>Mac avec processeur Intel · .dmg</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <p class="hint">L'application n'est pas signée par Apple. Au premier lancement : clic droit sur l'app → <b>Ouvrir</b>. Si macOS indique qu'elle est endommagée, lancez dans le Terminal : <code>xattr -cr "/Applications/Lecteur PDF.app"</code></p>
+        </article>
+
+        <article class="platform" data-os="linux">
+          <header>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-2.2 0-3.6 1.8-3.6 4.3 0 1.3.2 2.2-.5 3.4-.9 1.4-2.6 3.6-2.9 6-.2 1.3.2 2.2.8 2.7-.4.5-1 1.2-.6 1.9.5.9 2.4.4 3.6.9 1.2.5 2.7.9 3.6-.2h.4c.9 1.1 2.4.7 3.6.2 1.2-.5 3.1 0 3.6-.9.4-.7-.2-1.4-.6-1.9.6-.5 1-1.4.8-2.7-.3-2.4-2-4.6-2.9-6-.7-1.2-.5-2.1-.5-3.4C15.6 3.8 14.2 2 12 2Zm-1.5 4.2c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1Zm3 0c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1ZM12 9.3c.9 0 2.2.6 2.2 1.1 0 .4-1.3 1.2-2.2 1.2s-2.2-.8-2.2-1.2c0-.5 1.3-1.1 2.2-1.1Z"/></svg>
+            <h3>Linux</h3><span class="badge">Votre système</span>
+          </header>
+          <a class="dl" data-file="Lecteur-PDF-Linux-x86_64.AppImage">
+            <div><strong>AppImage</strong><span>Toutes les distributions · sans installation</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <a class="dl" data-file="lecteur-pdf_amd64.deb">
+            <div><strong>.deb</strong><span>Ubuntu, Debian, Linux Mint, Pop!_OS…</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <a class="dl" data-file="lecteur-pdf.x86_64.rpm">
+            <div><strong>.rpm</strong><span>Fedora, openSUSE, RHEL…</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <a class="dl" data-file="Lecteur-PDF-Linux-x64.tar.gz">
+            <div><strong>.tar.gz</strong><span>Archive pour Arch et les autres distributions</span></div>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+          </a>
+          <p class="hint">AppImage : rendez le fichier exécutable avec <code>chmod +x Lecteur-PDF-Linux-x86_64.AppImage</code> puis lancez-le.</p>
+        </article>
+      </div>
+      <p class="all-releases">Toutes les versions et les sommes de contrôle SHA-256 sont sur la <a href="https://github.com/codeByDarknet/lecteur-pdf/releases">page des releases GitHub</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap oss">
+      <div>
+        <span class="pill">Licence MIT</span>
+        <h2>Open source, pour de vrai</h2>
+        <p>Le code de Lecteur PDF est public sur GitHub. Vous pouvez le lire, le modifier, l'améliorer et le redistribuer librement. Vos documents restent sur votre ordinateur : l'application ne collecte rien et n'envoie rien.</p>
+        <div class="cta" style="justify-content:flex-start;margin-top:26px">
+          <a class="btn btn-primary" href="https://github.com/codeByDarknet/lecteur-pdf">Contribuer sur GitHub</a>
+          <a class="btn btn-ghost" href="https://github.com/codeByDarknet/lecteur-pdf/issues/new/choose">Signaler un bug</a>
+        </div>
+      </div>
+      <pre class="terminal"><span class="c"># Lancer le projet en local</span>
+<span class="p">$</span> git clone https://github.com/codeByDarknet/lecteur-pdf
+<span class="p">$</span> cd lecteur-pdf
+<span class="p">$</span> npm install
+<span class="p">$</span> npm run dev</pre>
+    </div>
+  </section>
+
+  <section id="faq" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-title"><h2>Questions fréquentes</h2></div>
+      <div class="faq">
+        <details>
+          <summary>Est-ce vraiment gratuit ?</summary>
+          <p>Oui. Lecteur PDF est gratuit, sans publicité, sans abonnement et sans compte. Le code est sous licence MIT.</p>
+        </details>
+        <details>
+          <summary>Mes documents sont-ils envoyés quelque part ?</summary>
+          <p>Non. Les PDF sont lus directement depuis votre disque. L'application fonctionne entièrement hors ligne et n'envoie aucune donnée.</p>
+        </details>
+        <details>
+          <summary>Comment en faire mon lecteur PDF par défaut ?</summary>
+          <p>Après l'installation, faites un clic droit sur un PDF → <b>Ouvrir avec</b> → <b>Lecteur PDF</b>, et cochez l'option pour toujours l'utiliser. Sous Windows, passez par <b>Paramètres → Applications → Applications par défaut</b>.</p>
+        </details>
+        <details>
+          <summary>Pourquoi mon système affiche-t-il un avertissement ?</summary>
+          <p>Les certificats de signature de Microsoft et d'Apple sont payants, et l'application n'en a pas encore. Le code est public et chaque version est construite automatiquement sur GitHub à partir de ce code. Vous pouvez vérifier le fichier téléchargé avec le fichier <code>SHA256SUMS.txt</code> de la release.</p>
+        </details>
+        <details>
+          <summary>Comment mettre à jour ?</summary>
+          <p>Téléchargez la nouvelle version depuis cette page et installez-la par-dessus l'ancienne. Vos onglets et votre session sont conservés.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Abdoul Razack Ouedraogo · Licence MIT</span>
+      <span><a href="https://github.com/codeByDarknet/lecteur-pdf">Code source</a> · <a href="https://github.com/codeByDarknet/lecteur-pdf/releases">Versions</a> · <a href="https://github.com/codeByDarknet/lecteur-pdf/issues">Signaler un bug</a></span>
+    </div>
+  </footer>
+
+  <script>
+    const REPO = 'codeByDarknet/lecteur-pdf'
+    const latest = (file) => `https://github.com/${REPO}/releases/latest/download/${file}`
+
+    document.querySelectorAll('.dl[data-file]').forEach((a) => { a.href = latest(a.dataset.file) })
+
+    // Mettre en avant le système du visiteur
+    const ua = navigator.userAgent
+    const os = /Windows/i.test(ua) ? 'windows'
+      : /Mac OS X|Macintosh/i.test(ua) && !/iPhone|iPad/i.test(ua) ? 'mac'
+      : /Linux/i.test(ua) && !/Android/i.test(ua) ? 'linux'
+      : null
+    const labels = { windows: 'Télécharger pour Windows', mac: 'Télécharger pour macOS', linux: 'Télécharger pour Linux' }
+    if (os) {
+      const card = document.querySelector(`.platform[data-os="${os}"]`)
+      card.classList.add('detected')
+      card.parentElement.prepend(card)
+      document.getElementById('main-download-label').textContent = labels[os]
+      if (os === 'windows') document.getElementById('main-download').href = latest('Lecteur-PDF-Windows-Setup.exe')
+    }
+
+    // Afficher le numéro de la dernière version publiée
+    fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((release) => {
+        if (release?.tag_name) {
+          document.getElementById('version').textContent = `Version ${release.tag_name.replace(/^v/, '')} · Windows · macOS · Linux`
+        }
+      })
+      .catch(() => {})
+  </script>
+</body>
+</html>
