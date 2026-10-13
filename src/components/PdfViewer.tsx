@@ -30,6 +30,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([])
   const [activeMatchIndex, setActiveMatchIndex] = useState(-1)
   const [pageTexts, setPageTexts] = useState<PageText[] | null>(null)
+  const [isDocLoaded, setIsDocLoaded] = useState(false)
   const pdfRef = useRef<PDFDocumentProxy | null>(null)
   const pageTextsPromiseRef = useRef<Promise<PageText[]> | null>(null)
   const searchIdRef = useRef(0)
@@ -66,6 +67,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
       pdfRef.current = pdf
       pageTextsPromiseRef.current = null
       setTotalPages(panelId, tab.id, pdf.numPages)
+      setIsDocLoaded(true)
     },
     [panelId, tab.id, setTotalPages]
   )
@@ -211,6 +213,16 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   }, [panelId, tab.id, tab.zoom, setZoom])
 
   const baseWidth = containerWidth > 64 ? Math.max(200, containerWidth - 48) : undefined
+
+  // Session restaurée : revenir à la page où la lecture s'était arrêtée
+  const restoredPositionRef = useRef(false)
+  useEffect(() => {
+    if (restoredPositionRef.current || !isDocLoaded || !baseWidth || tab.totalPages === 0) return
+    restoredPositionRef.current = true
+    if (tab.currentPage > 1) {
+      requestAnimationFrame(() => scrollToPage(tab.currentPage, 'auto'))
+    }
+  }, [isDocLoaded, baseWidth, tab.totalPages, tab.currentPage, scrollToPage])
   const fileProp = useMemo(() => fileData ? { data: fileData } : null, [fileData])
   const pages = Array.from({ length: tab.totalPages }, (_, i) => i + 1)
 

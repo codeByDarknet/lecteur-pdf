@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 import type { PdfTab, Panel, SplitDirection } from '@/types'
 import { generateId } from '@/lib/utils'
 import { clearPdfCache } from '@/lib/fileCache'
@@ -62,7 +63,17 @@ const getInitialTheme = (): 'dark' | 'light' => {
 
 const initialPanel = createDefaultPanel()
 
-export const useAppStore = create<AppState>((set, get) => ({
+type PersistedSession = Pick<AppState, 'panels' | 'activePanelId' | 'splitDirection'>
+
+// Les fichiers glissés hors Electron (blob:) ne survivent pas à un redémarrage
+const sessionPanels = (panels: Panel[]): Panel[] =>
+  panels.map((panel) => {
+    const tabs = panel.tabs.filter((t) => !t.filePath.startsWith('blob:'))
+    const activeTabId = tabs.some((t) => t.id === panel.activeTabId) ? panel.activeTabId : tabs[0]?.id ?? null
+    return { ...panel, tabs, activeTabId }
+  })
+
+export const useAppStore = create<AppState>()(persist((set, get) => ({
   theme: getInitialTheme(),
   toggleTheme: () => {
     set((state) => {
@@ -264,5 +275,25 @@ export const useAppStore = create<AppState>((set, get) => ({
           : panel
       ),
     }))
+  },
+}), {
+  name: 'lecteur-pdf-session',
+  version: 1,
+  partialize: (state): PersistedSession => ({
+    panels: sessionPanels(state.panels),
+    activePanelId: state.activePanelId,
+    splitDirection: state.splitDirection,
+  }),
+  merge: (persisted, current) => {
+    const session = persisted as Partial<PersistedSession> | undefined
+    if (!session || !Array.isArray(session.panels) || session.panels.length === 0) return current
+    const panels = sessionPanels(session.panels)
+    const activePanelId = panels.some((p) => p.id === session.activePanelId) ? session.activePanelId! : panels[0].id
+    return {
+      ...current,
+      panels,
+      activePanelId,
+      splitDirection: session.splitDirection ?? current.splitDirection,
+    }
   },
 }))
