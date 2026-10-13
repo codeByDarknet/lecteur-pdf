@@ -4,6 +4,7 @@ import { TitleBar } from '@/components/TitleBar'
 import { PanelManager } from '@/components/PanelManager'
 import { useAppStore } from '@/store/useAppStore'
 import { selectPdfFiles } from '@/lib/utils'
+import type { SelectedPdfFile } from '@/types'
 
 export default function App() {
   const { theme, openFiles } = useAppStore()
@@ -15,6 +16,18 @@ export default function App() {
       document.documentElement.classList.remove('dark')
     }
   }, [theme])
+
+  // PDF ouverts depuis le système (« Ouvrir avec », double-clic, ligne de commande)
+  useEffect(() => {
+    const api = window.electronAPI
+    if (!api?.getPendingFiles) return
+    const openInActivePanel = (files: SelectedPdfFile[]) => {
+      if (files.length > 0) openFiles(useAppStore.getState().activePanelId, files)
+    }
+    const unsubscribe = api.onOpenFiles(openInActivePanel)
+    api.getPendingFiles().then(openInActivePanel).catch((err) => console.error('Error getting pending files:', err))
+    return unsubscribe
+  }, [openFiles])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {

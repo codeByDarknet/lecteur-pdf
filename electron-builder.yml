@@ -6,9 +6,15 @@ directories:
 files:
   - dist
   - dist-electron
+fileAssociations:
+  - ext: pdf
+    name: Document PDF
+    mimeType: application/pdf
 linux:
   target:
     - AppImage
     - deb
   category: Office
+  mimeTypes:
+    - application/pdf
   icon: build/icon.png
