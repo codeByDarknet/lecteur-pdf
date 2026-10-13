@@ -1,0 +1,47 @@
+name: Signaler un bug
+description: Quelque chose ne fonctionne pas comme prévu
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Que se passe-t-il ?
+      description: Décris le problème et ce que tu attendais à la place.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Ouvrir un PDF de 200 pages
+        2. Scinder en deux panneaux
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version de Lecteur PDF
+      placeholder: 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Système
+      options:
+        - Windows
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux — AppImage
+        - Linux — .deb
+        - Linux — .rpm
+        - Linux — .tar.gz
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Captures d'écran, PDF d'exemple, logs
+      description: Si le bug dépend d'un PDF précis, joins-le s'il ne contient rien de confidentiel.
