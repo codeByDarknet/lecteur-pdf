@@ -1,14 +1,31 @@
 {
-  "name": "lecteur-pdf-ubuntu",
+  "name": "lecteur-pdf",
   "private": true,
   "version": "1.0.0",
-  "description": "Lecteur PDF avec multi-tab et multi-panel",
+  "description": "Lecteur PDF gratuit et open source, avec onglets et panneaux multiples",
+  "author": {
+    "name": "Abdoul Razack Ouedraogo",
+    "email": "abdoulrazackouedraogo1@gmail.com"
+  },
+  "license": "MIT",
+  "homepage": "https://codebydarknet.github.io/lecteur-pdf/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codeByDarknet/lecteur-pdf.git"
+  },
+  "bugs": {
+    "url": "https://github.com/codeByDarknet/lecteur-pdf/issues"
+  },
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "dist": "npm run build && electron-builder"
+    "dist": "npm run build && electron-builder",
+    "typecheck": "tsc --noEmit",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:mac": "npm run build && electron-builder --mac"
   },
   "dependencies": {
     "react": "^18.2.0",

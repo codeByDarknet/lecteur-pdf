@@ -1,5 +1,6 @@
-appId: com.lecteurpdf.ubuntu
+appId: io.github.codebydarknet.lecteurpdf
 productName: Lecteur PDF
+copyright: Copyright © 2026 Abdoul Razack Ouedraogo
 directories:
   buildResources: build
   output: release
@@ -10,11 +11,49 @@ fileAssociations:
   - ext: pdf
     name: Document PDF
     mimeType: application/pdf
+    role: Viewer
+# Noms de fichiers sans numéro de version : le site pointe vers
+# https://github.com/codeByDarknet/lecteur-pdf/releases/latest/download/<nom>
+publish: null
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    - target: portable
+      arch: [x64]
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: Lecteur-PDF-Windows-Setup.${ext}
+portable:
+  artifactName: Lecteur-PDF-Windows-Portable.${ext}
+
+mac:
+  category: public.app-category.productivity
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  artifactName: Lecteur-PDF-macOS-${arch}.${ext}
+
 linux:
   target:
-    - AppImage
-    - deb
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+    - target: rpm
+      arch: [x64]
+    - target: tar.gz
+      arch: [x64]
+  executableName: lecteur-pdf
   category: Office
+  synopsis: Lecteur PDF avec onglets et panneaux multiples
   mimeTypes:
     - application/pdf
   icon: build/icon.png
+  artifactName: Lecteur-PDF-Linux-${arch}.${ext}
+deb:
+  artifactName: lecteur-pdf_${arch}.${ext}
+rpm:
+  artifactName: lecteur-pdf.${arch}.${ext}
