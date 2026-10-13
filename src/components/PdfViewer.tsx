@@ -8,6 +8,7 @@ import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { LazyPdfPage } from './LazyPdfPage'
 import { getCachedPdfData } from '@/lib/fileCache'
 import { extractPageTexts, findMatches, createHighlightRenderer, type PageText, type SearchMatch } from '@/lib/pdfSearch'
+import { useShallow } from 'zustand/react/shallow'
 import { useAppStore, MIN_ZOOM, MAX_ZOOM } from '@/store/useAppStore'
 import type { PdfTab } from '@/types'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
@@ -17,11 +18,22 @@ interface PdfViewerProps {
   panelId: string
 }
 
-export function PdfViewer({ tab, panelId }: PdfViewerProps) {
-  const { setCurrentPage, setTotalPages, setZoom, toggleThumbnails, addPanel } = useAppStore()
-  const panel = useAppStore((s) => s.panels.find((p) => p.id === panelId))
+function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
+  const { setCurrentPage, setTotalPages, setZoom, toggleThumbnails, addPanel } = useAppStore(
+    useShallow((s) => ({
+      setCurrentPage: s.setCurrentPage,
+      setTotalPages: s.setTotalPages,
+      setZoom: s.setZoom,
+      toggleThumbnails: s.toggleThumbnails,
+      addPanel: s.addPanel,
+    }))
+  )
+  // Valeurs primitives uniquement : défiler dans un autre onglet ne redessine pas celui-ci
+  const showThumbnails = useAppStore((s) => s.panels.find((p) => p.id === panelId)?.showThumbnails ?? false)
   // Seul l'onglet visible du panel actif réagit aux raccourcis clavier
-  const isActiveViewer = useAppStore((s) => s.activePanelId === panelId) && panel?.activeTabId === tab.id
+  const isActiveViewer = useAppStore(
+    (s) => s.activePanelId === panelId && s.panels.find((p) => p.id === panelId)?.activeTabId === tab.id
+  )
   const [fileData, setFileData] = useState<Uint8Array | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
@@ -78,32 +90,42 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
     [panelId, tab.id, setTotalPages]
   )
 
-  // Scroll tracking for current page
+  // Page courante = page dont le haut est le plus proche du haut de la zone visible.
+  // Recherche dichotomique sur offsetTop (pages dans l'ordre), au plus une mesure par frame.
+  const scrollFrameRef = useRef(0)
+  const currentPageRef = useRef(tab.currentPage)
+  currentPageRef.current = tab.currentPage
+  useEffect(() => () => cancelAnimationFrame(scrollFrameRef.current), [])
+
   const handleScroll = useCallback(() => {
-    if (!containerRef.current) return
-    const container = containerRef.current
-    const scrollTop = container.scrollTop
-    const containerHeight = container.clientHeight
+    if (scrollFrameRef.current) return
+    scrollFrameRef.current = requestAnimationFrame(() => {
+      scrollFrameRef.current = 0
+      const container = containerRef.current
+      const total = pageRefs.current.size
+      if (!container || total === 0) return
+      const scrollTop = container.scrollTop
+      const topOf = (page: number) => pageRefs.current.get(page)?.offsetTop ?? 0
 
-    let closestPage = tab.currentPage
-    let closestDistance = Infinity
+      let lo = 1
+      let hi = total
+      while (lo < hi) {
+        const mid = Math.ceil((lo + hi) / 2)
+        if (topOf(mid) <= scrollTop) lo = mid
+        else hi = mid - 1
+      }
+      const closestPage =
+        lo < total && Math.abs(topOf(lo + 1) - scrollTop) < Math.abs(topOf(lo) - scrollTop) ? lo + 1 : lo
 
-    pageRefs.current.forEach((el, pageNum) => {
-      const rect = el.getBoundingClientRect()
-      const containerRect = container.getBoundingClientRect()
-      const relativeTop = rect.top - containerRect.top
-      const distance = Math.abs(relativeTop)
-
-      if (distance < closestDistance) {
-        closestDistance = distance
-        closestPage = pageNum
+      if (closestPage !== currentPageRef.current) {
+        setCurrentPage(panelId, tab.id, closestPage)
       }
     })
+  }, [panelId, tab.id, setCurrentPage])
 
-    if (closestPage !== tab.currentPage) {
-      setCurrentPage(panelId, tab.id, closestPage)
-    }
-  }, [panelId, tab.id, tab.currentPage, setCurrentPage])
+  const registerPageRef = useCallback((pageNum: number, el: HTMLDivElement | null) => {
+    if (el) pageRefs.current.set(pageNum, el)
+  }, [])
 
   const scrollToPage = useCallback((pageNum: number, behavior: ScrollBehavior = 'smooth') => {
     const el = pageRefs.current.get(pageNum)
@@ -129,10 +151,10 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
       scrollToPage(newPage)
     }
   }
-  const handleGoToPage = (page: number) => {
+  const handleGoToPage = useCallback((page: number) => {
     setCurrentPage(panelId, tab.id, page)
     scrollToPage(page)
-  }
+  }, [panelId, tab.id, setCurrentPage, scrollToPage])
 
   // Keyboard shortcuts (ref pour toujours appeler les handlers à jour)
   const shortcutHandlersRef = useRef({ handleZoomIn, handleZoomOut, handleZoomFit })
@@ -347,7 +369,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
         currentPage={tab.currentPage}
         totalPages={tab.totalPages}
         zoom={tab.zoom}
-        showThumbnails={panel?.showThumbnails ?? false}
+        showThumbnails={showThumbnails}
         showSearch={showSearch}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
@@ -374,7 +396,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
           </div>
         }
       >
-        {panel?.showThumbnails && (
+        {showThumbnails && (
           <ThumbnailSidebar
             totalPages={tab.totalPages}
             currentPage={tab.currentPage}
@@ -405,9 +427,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
                 baseWidth={baseWidth}
                 zoom={tab.zoom}
                 customTextRenderer={customTextRenderer}
-                registerRef={(el) => {
-                  if (el) pageRefs.current.set(pageNum, el)
-                }}
+                registerRef={registerPageRef}
               />
             ))}
           </div>
@@ -416,3 +436,5 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
     </div>
   )
 }
+
+export const PdfViewer = React.memo(PdfViewerComponent)

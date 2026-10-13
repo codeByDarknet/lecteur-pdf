@@ -7,7 +7,8 @@ import { selectPdfFiles } from '@/lib/utils'
 import type { SelectedPdfFile } from '@/types'
 
 export default function App() {
-  const { theme, openFiles } = useAppStore()
+  const theme = useAppStore((s) => s.theme)
+  const openFiles = useAppStore((s) => s.openFiles)
 
   useEffect(() => {
     if (theme === 'dark') {

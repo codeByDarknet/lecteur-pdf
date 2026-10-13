@@ -124,6 +124,10 @@ function createWindow() {
     icon: path.join(process.env.APP_ROOT, 'build', 'icon.png'),
   })
 
+  // Prévient l'interface au lieu qu'elle interroge l'état de la fenêtre en boucle
+  win.on('maximize', () => win?.webContents.send('window:maximized-changed', true))
+  win.on('unmaximize', () => win?.webContents.send('window:maximized-changed', false))
+
   win.webContents.on('did-start-loading', () => {
     rendererReady = false
   })

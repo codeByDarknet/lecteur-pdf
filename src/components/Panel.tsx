@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react'
 import { FileUp } from 'lucide-react'
 import { TabBar } from './TabBar'
 import { PdfViewer } from './PdfViewer'
+import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '@/store/useAppStore'
 import { cn, selectPdfFiles } from '@/lib/utils'
 import type { Panel as PanelType } from '@/types'
@@ -12,8 +13,19 @@ interface PdfPanelProps {
   showCloseButton: boolean
 }
 
-export function PdfPanel({ panel, isActive, showCloseButton }: PdfPanelProps) {
-  const { openFiles, closeTab, setActiveTab, setActivePanel, removePanel, moveTab, reorderTabs } = useAppStore()
+// memo : un panel ne se redessine que si son propre état change
+export const PdfPanel = React.memo(function PdfPanel({ panel, isActive, showCloseButton }: PdfPanelProps) {
+  const { openFiles, closeTab, setActiveTab, setActivePanel, removePanel, moveTab, reorderTabs } = useAppStore(
+    useShallow((s) => ({
+      openFiles: s.openFiles,
+      closeTab: s.closeTab,
+      setActiveTab: s.setActiveTab,
+      setActivePanel: s.setActivePanel,
+      removePanel: s.removePanel,
+      moveTab: s.moveTab,
+      reorderTabs: s.reorderTabs,
+    }))
+  )
   const [isDragTarget, setIsDragTarget] = useState(false)
 
   const activeTab = panel.tabs.find((t) => t.id === panel.activeTabId) ?? null
@@ -149,4 +161,4 @@ export function PdfPanel({ panel, isActive, showCloseButton }: PdfPanelProps) {
       )}
     </div>
   )
-}
+})

@@ -7,11 +7,12 @@ interface LazyPdfPageProps {
   pageNum: number
   baseWidth?: number
   zoom: number
-  registerRef?: (el: HTMLDivElement | null) => void
+  registerRef?: (pageNum: number, el: HTMLDivElement | null) => void
   customTextRenderer?: CustomTextRenderer
 }
 
-export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef, customTextRenderer }: LazyPdfPageProps) {
+// memo : changer de page courante ne redessine pas toutes les pages du document
+export const LazyPdfPage = React.memo(function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef, customTextRenderer }: LazyPdfPageProps) {
   // Render pages 1 and 2 immediately; lazily render subsequent pages as user scrolls
   const [isVisible, setIsVisible] = useState(pageNum <= 2)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -43,7 +44,7 @@ export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef, customTextR
     <div
       ref={(node) => {
         containerRef.current = node
-        registerRef?.(node)
+        registerRef?.(pageNum, node)
       }}
       className="mb-4 flex justify-center w-full min-w-fit"
       style={{ minHeight: isVisible ? undefined : estimatedHeight }}
@@ -74,4 +75,4 @@ export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef, customTextR
       )}
     </div>
   )
-}
+})

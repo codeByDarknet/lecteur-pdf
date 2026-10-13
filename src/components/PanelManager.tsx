@@ -1,11 +1,14 @@
 import React from 'react'
 import { PanelGroup, Panel as ResizablePanel, PanelResizeHandle } from 'react-resizable-panels'
 import { PdfPanel } from './Panel'
+import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '@/store/useAppStore'
 import { GripVertical } from 'lucide-react'
 
 export function PanelManager() {
-  const { panels, splitDirection, activePanelId } = useAppStore()
+  const { panels, splitDirection, activePanelId } = useAppStore(
+    useShallow((s) => ({ panels: s.panels, splitDirection: s.splitDirection, activePanelId: s.activePanelId }))
+  )
 
   if (panels.length === 0) return null
 

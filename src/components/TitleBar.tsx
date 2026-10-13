@@ -5,27 +5,19 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { useAppStore } from '@/store/useAppStore'
 
 export function TitleBar() {
-  const { theme, toggleTheme } = useAppStore()
+  const theme = useAppStore((s) => s.theme)
+  const toggleTheme = useAppStore((s) => s.toggleTheme)
   const [isMaximized, setIsMaximized] = useState(false)
 
   useEffect(() => {
-    const checkMaximized = async () => {
-      if (window.electronAPI?.isMaximized) {
-        const maximized = await window.electronAPI.isMaximized()
-        setIsMaximized(maximized)
-      }
-    }
-    checkMaximized()
-    const interval = setInterval(checkMaximized, 500)
-    return () => clearInterval(interval)
+    const api = window.electronAPI
+    if (!api?.isMaximized) return
+    api.isMaximized().then(setIsMaximized)
+    return api.onMaximizedChange?.(setIsMaximized)
   }, [])
 
   const handleMinimize = () => window.electronAPI?.minimizeWindow()
-  const handleMaximize = async () => {
-    await window.electronAPI?.maximizeWindow()
-    const maximized = await window.electronAPI?.isMaximized()
-    setIsMaximized(maximized ?? false)
-  }
+  const handleMaximize = () => window.electronAPI?.maximizeWindow()
   const handleClose = () => window.electronAPI?.closeWindow()
 
   return (
