@@ -119,6 +119,10 @@ html, body, #root {
 }
 
 /* Search match highlight */
+.react-pdf__Page__textContent mark {
+  color: transparent;
+}
+
 .search-match {
   background-color: rgba(250, 204, 21, 0.4) !important;
   border-radius: 2px;

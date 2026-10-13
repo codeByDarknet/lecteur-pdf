@@ -7,8 +7,10 @@ import { SearchBar } from './SearchBar'
 import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { LazyPdfPage } from './LazyPdfPage'
 import { getCachedPdfData } from '@/lib/fileCache'
+import { extractPageTexts, findMatches, createHighlightRenderer, type PageText, type SearchMatch } from '@/lib/pdfSearch'
 import { useAppStore, MIN_ZOOM, MAX_ZOOM } from '@/store/useAppStore'
 import type { PdfTab } from '@/types'
+import type { PDFDocumentProxy } from 'pdfjs-dist'
 
 interface PdfViewerProps {
   tab: PdfTab
@@ -23,8 +25,14 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const [fileData, setFileData] = useState<Uint8Array | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showSearch, setShowSearch] = useState(false)
-  const [searchCurrentMatch, setSearchCurrentMatch] = useState(0)
-  const [searchTotalMatches, setSearchTotalMatches] = useState(0)
+  const [searchFocusKey, setSearchFocusKey] = useState(0)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([])
+  const [activeMatchIndex, setActiveMatchIndex] = useState(-1)
+  const [pageTexts, setPageTexts] = useState<PageText[] | null>(null)
+  const pdfRef = useRef<PDFDocumentProxy | null>(null)
+  const pageTextsPromiseRef = useRef<Promise<PageText[]> | null>(null)
+  const searchIdRef = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
@@ -54,8 +62,10 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   }, [tab.filePath])
 
   const onDocumentLoadSuccess = useCallback(
-    ({ numPages }: { numPages: number }) => {
-      setTotalPages(panelId, tab.id, numPages)
+    (pdf: PDFDocumentProxy) => {
+      pdfRef.current = pdf
+      pageTextsPromiseRef.current = null
+      setTotalPages(panelId, tab.id, pdf.numPages)
     },
     [panelId, tab.id, setTotalPages]
   )
@@ -87,10 +97,10 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
     }
   }, [panelId, tab.id, tab.currentPage, setCurrentPage])
 
-  const scrollToPage = useCallback((pageNum: number) => {
+  const scrollToPage = useCallback((pageNum: number, behavior: ScrollBehavior = 'smooth') => {
     const el = pageRefs.current.get(pageNum)
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      el.scrollIntoView({ behavior, block: 'start' })
     }
   }, [])
 
@@ -128,6 +138,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
       if (e.key.toLowerCase() === 'f') {
         e.preventDefault()
         setShowSearch(true)
+        setSearchFocusKey((k) => k + 1)
       } else if (e.key === '=' || e.key === '+') {
         e.preventDefault()
         handlers.handleZoomIn()
@@ -203,69 +214,76 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const fileProp = useMemo(() => fileData ? { data: fileData } : null, [fileData])
   const pages = Array.from({ length: tab.totalPages }, (_, i) => i + 1)
 
-  const handleSearch = useCallback((query: string) => {
-    // Basic search - we'll count matches in visible text
-    if (!query) {
-      setSearchTotalMatches(0)
-      setSearchCurrentMatch(0)
+  // Recherche sur le texte extrait par pdf.js : couvre toutes les pages, même pas encore rendues
+  const handleSearch = useCallback(async (query: string) => {
+    const searchId = ++searchIdRef.current
+    setSearchQuery(query)
+    if (!query || !pdfRef.current) {
+      setSearchMatches([])
+      setActiveMatchIndex(-1)
       return
     }
-    // Search through text layer spans
-    if (containerRef.current) {
-      const spans = containerRef.current.querySelectorAll('.react-pdf__Page__textContent span')
-      let count = 0
-      spans.forEach((span) => {
-        const el = span as HTMLElement
-        const text = el.textContent || ''
-        if (text.toLowerCase().includes(query.toLowerCase())) {
-          el.classList.add('search-match')
-          count++
-        } else {
-          el.classList.remove('search-match', 'search-match-active')
-        }
-      })
-      setSearchTotalMatches(count)
-      setSearchCurrentMatch(count > 0 ? 1 : 0)
-
-      // Highlight first match
-      if (count > 0) {
-        const matches = containerRef.current.querySelectorAll('.search-match')
-        matches[0]?.classList.add('search-match-active')
-        matches[0]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-      }
+    try {
+      pageTextsPromiseRef.current ??= extractPageTexts(pdfRef.current)
+      const texts = await pageTextsPromiseRef.current
+      if (searchId !== searchIdRef.current) return
+      const matches = findMatches(texts, query)
+      setPageTexts(texts)
+      setSearchMatches(matches)
+      setActiveMatchIndex(matches.length > 0 ? 0 : -1)
+    } catch (err) {
+      console.error('Search error:', err)
     }
   }, [])
 
   const handleSearchNext = useCallback(() => {
-    if (!containerRef.current || searchTotalMatches === 0) return
-    const matches = containerRef.current.querySelectorAll('.search-match')
-    const nextIndex = searchCurrentMatch % searchTotalMatches
-    matches.forEach((el) => el.classList.remove('search-match-active'))
-    matches[nextIndex]?.classList.add('search-match-active')
-    matches[nextIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    setSearchCurrentMatch(nextIndex + 1)
-  }, [searchCurrentMatch, searchTotalMatches])
+    const n = searchMatches.length
+    if (n === 0) return
+    setActiveMatchIndex((i) => (i + 1) % n)
+  }, [searchMatches.length])
 
   const handleSearchPrev = useCallback(() => {
-    if (!containerRef.current || searchTotalMatches === 0) return
-    const matches = containerRef.current.querySelectorAll('.search-match')
-    const prevIndex = (searchCurrentMatch - 2 + searchTotalMatches) % searchTotalMatches
-    matches.forEach((el) => el.classList.remove('search-match-active'))
-    matches[prevIndex]?.classList.add('search-match-active')
-    matches[prevIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-    setSearchCurrentMatch(prevIndex + 1)
-  }, [searchCurrentMatch, searchTotalMatches])
+    const n = searchMatches.length
+    if (n === 0) return
+    setActiveMatchIndex((i) => (i - 1 + n) % n)
+  }, [searchMatches.length])
 
   const handleSearchClose = useCallback(() => {
+    searchIdRef.current++
     setShowSearch(false)
-    setSearchTotalMatches(0)
-    setSearchCurrentMatch(0)
-    if (containerRef.current) {
-      containerRef.current.querySelectorAll('.search-match, .search-match-active').forEach((el) => {
-        el.classList.remove('search-match', 'search-match-active')
-      })
-    }
+    setSearchQuery('')
+    setSearchMatches([])
+    setActiveMatchIndex(-1)
   }, [])
+
+  const customTextRenderer = useMemo(
+    () =>
+      searchQuery && pageTexts && searchMatches.length > 0
+        ? createHighlightRenderer(pageTexts, searchMatches, activeMatchIndex)
+        : undefined,
+    [searchQuery, pageTexts, searchMatches, activeMatchIndex]
+  )
+
+  // Amène l'occurrence active à l'écran (la page peut ne pas encore être rendue)
+  useEffect(() => {
+    const match = searchMatches[activeMatchIndex]
+    const container = containerRef.current
+    if (!match || !container) return
+
+    scrollToPage(match.page, 'auto')
+    let attempts = 0
+    let timer: ReturnType<typeof setTimeout>
+    const reveal = () => {
+      const el = container.querySelector('.search-match-active')
+      if (el) {
+        el.scrollIntoView({ block: 'center' })
+      } else if (attempts++ < 40) {
+        timer = setTimeout(reveal, 50)
+      }
+    }
+    timer = setTimeout(reveal, 0)
+    return () => clearTimeout(timer)
+  }, [searchMatches, activeMatchIndex, scrollToPage])
 
   if (loadError) {
     return (
@@ -328,12 +346,13 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
         <div className="flex-1 relative min-h-0">
           {showSearch && (
             <SearchBar
+              focusKey={searchFocusKey}
               onSearch={handleSearch}
               onNext={handleSearchNext}
               onPrev={handleSearchPrev}
               onClose={handleSearchClose}
-              currentMatch={searchCurrentMatch}
-              totalMatches={searchTotalMatches}
+              currentMatch={activeMatchIndex + 1}
+              totalMatches={searchMatches.length}
             />
           )}
           <div
@@ -347,6 +366,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
                 pageNum={pageNum}
                 baseWidth={baseWidth}
                 zoom={tab.zoom}
+                customTextRenderer={customTextRenderer}
                 registerRef={(el) => {
                   if (el) pageRefs.current.set(pageNum, el)
                 }}

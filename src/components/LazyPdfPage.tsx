@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Page } from 'react-pdf'
 
+type CustomTextRenderer = React.ComponentProps<typeof Page>['customTextRenderer']
+
 interface LazyPdfPageProps {
   pageNum: number
   baseWidth?: number
   zoom: number
   registerRef?: (el: HTMLDivElement | null) => void
+  customTextRenderer?: CustomTextRenderer
 }
 
-export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef }: LazyPdfPageProps) {
+export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef, customTextRenderer }: LazyPdfPageProps) {
   // Render pages 1 and 2 immediately; lazily render subsequent pages as user scrolls
   const [isVisible, setIsVisible] = useState(pageNum <= 2)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -52,6 +55,7 @@ export function LazyPdfPage({ pageNum, baseWidth, zoom, registerRef }: LazyPdfPa
           scale={zoom}
           renderTextLayer={true}
           renderAnnotationLayer={true}
+          customTextRenderer={customTextRenderer}
           className="shadow-lg"
           loading={
             <div

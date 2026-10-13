@@ -10,15 +10,17 @@ interface SearchBarProps {
   onClose: () => void
   currentMatch: number
   totalMatches: number
+  focusKey?: number
 }
 
-export function SearchBar({ onSearch, onNext, onPrev, onClose, currentMatch, totalMatches }: SearchBarProps) {
+export function SearchBar({ onSearch, onNext, onPrev, onClose, currentMatch, totalMatches, focusKey }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     inputRef.current?.focus()
-  }, [])
+    inputRef.current?.select()
+  }, [focusKey])
 
   useEffect(() => {
     const timer = setTimeout(() => {
