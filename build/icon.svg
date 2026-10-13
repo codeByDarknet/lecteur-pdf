@@ -1,10 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0a0a0a"/>
-  <g transform="translate(96 80) scale(13.33)" fill="none" stroke="#fafafa" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-    <polyline points="14 2 14 8 20 8"/>
-    <line x1="16" y1="13" x2="8" y2="13"/>
-    <line x1="16" y1="17" x2="8" y2="17"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <style>
+      .stroke{stroke:#162041;stroke-width:26;stroke-linecap:round;stroke-linejoin:round}
+      .fill-paper{fill:#FBFBFC}
+      .fill-none{fill:none}
+      .fill-coral{fill:#FF6C51}
+      .fill-yellow{fill:#F3CC4B}
+      .fill-lav{fill:#B9BEFF}
+      .fill-lav-dark{fill:#566CC3}
+      .fill-gray{fill:#D9D9DE}
+      .fill-pink{fill:#F8E5E1}
+    </style>
+  </defs>
+
+  <!-- transparent background -->
+
+  <!-- spark rays -->
+  <g class="stroke" fill="#F5B51D">
+    <rect x="270" y="170" width="44" height="122" rx="22" transform="rotate(-52 292 231)" stroke="none"/>
+    <rect x="365" y="130" width="44" height="122" rx="22" transform="rotate(-15 387 191)" stroke="none"/>
+    <rect x="180" y="235" width="44" height="122" rx="22" transform="rotate(-76 202 296)" stroke="none"/>
   </g>
-  <text x="256" y="455" font-family="sans-serif" font-weight="700" font-size="64" fill="#3b82f6" text-anchor="middle">PDF</text>
+
+  <!-- left thumbnails panel -->
+  <g transform="translate(175 355) rotate(-8)">
+    <rect x="0" y="0" width="230" height="470" rx="34" class="stroke fill-paper"/>
+
+    <!-- top file thumb -->
+    <g transform="translate(48 58)">
+      <path d="M0 18a18 18 0 0 1 18-18h93l40 40v125a18 18 0 0 1-18 18H18A18 18 0 0 1 0 165Z" class="fill-coral"/>
+      <path d="M111 0v24a16 16 0 0 0 16 16h24" class="fill-pink"/>
+      <path d="M0 18a18 18 0 0 1 18-18h93l40 40v125a18 18 0 0 1-18 18H18A18 18 0 0 1 0 165Z" class="stroke fill-none"/>
+    </g>
+
+    <!-- gray thumbs -->
+    <g transform="translate(64 252)">
+      <path d="M0 14a14 14 0 0 1 14-14h72l30 30v98a14 14 0 0 1-14 14H14A14 14 0 0 1 0 128Z" class="fill-gray"/>
+      <path d="M86 0v18a12 12 0 0 0 12 12h18" class="fill-paper"/>
+      <path d="M0 14a14 14 0 0 1 14-14h72l30 30v98a14 14 0 0 1-14 14H14A14 14 0 0 1 0 128Z" class="stroke fill-none" style="stroke-width:18"/>
+    </g>
+    <g transform="translate(64 382)">
+      <path d="M0 14a14 14 0 0 1 14-14h72l30 30v98a14 14 0 0 1-14 14H14A14 14 0 0 1 0 128Z" class="fill-gray"/>
+      <path d="M86 0v18a12 12 0 0 0 12 12h18" class="fill-paper"/>
+      <path d="M0 14a14 14 0 0 1 14-14h72l30 30v98a14 14 0 0 1-14 14H14A14 14 0 0 1 0 128Z" class="stroke fill-none" style="stroke-width:18"/>
+    </g>
+  </g>
+
+  <!-- right page -->
+  <g transform="translate(640 345) rotate(10)">
+    <path d="M0 32c0-18 14-32 32-32h167l62 62v369c0 18-14 32-32 32H32C14 463 0 449 0 431Z" class="stroke fill-paper"/>
+    <path d="M199 0v40c0 18 14 32 32 32h30" class="fill-lav stroke"/>
+
+    <!-- image block -->
+    <g transform="translate(48 118)">
+      <rect x="0" y="0" width="150" height="164" rx="12" class="fill-lav"/>
+      <circle cx="116" cy="52" r="16" fill="#FFFFFF"/>
+      <path d="M18 124 64 76 92 111 120 91 150 124V164H0V142Z" class="fill-lav-dark"/>
+    </g>
+
+    <!-- text lines -->
+    <g class="stroke fill-none" style="stroke-width:22">
+      <line x1="62" y1="336" x2="172" y2="336"/>
+      <line x1="62" y1="386" x2="172" y2="386"/>
+    </g>
+  </g>
+
+  <!-- main page -->
+  <g transform="translate(355 240) rotate(-2)">
+    <path d="M0 38c0-21 17-38 38-38h230l80 80v500c0 21-17 38-38 38H38C17 618 0 601 0 580Z" class="stroke fill-paper"/>
+    <path d="M230 0v48c0 18 14 32 32 32h48" class="fill-coral stroke"/>
+
+    <!-- text lines -->
+    <g class="stroke fill-none" style="stroke-width:24">
+      <line x1="82" y1="155" x2="178" y2="155"/>
+      <line x1="82" y1="225" x2="235" y2="225"/>
+    </g>
+
+    <!-- yellow highlight -->
+    <rect x="80" y="295" width="222" height="72" rx="20" class="fill-yellow"/>
+    <line x1="102" y1="330" x2="272" y2="330" class="stroke" style="fill:none;stroke-width:24"/>
+
+    <g class="stroke fill-none" style="stroke-width:24">
+      <line x1="82" y1="425" x2="255" y2="425"/>
+      <line x1="82" y1="500" x2="255" y2="500"/>
+    </g>
+  </g>
 </svg>

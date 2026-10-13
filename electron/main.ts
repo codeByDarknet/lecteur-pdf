@@ -121,7 +121,7 @@ function createWindow() {
       nodeIntegration: false,
       webSecurity: false,
     },
-    icon: path.join(process.env.APP_ROOT, 'build', 'icon.png'),
+    icon: path.join(process.env.VITE_PUBLIC, 'icon.png'),
   })
 
   // Prévient l'interface au lieu qu'elle interroge l'état de la fenêtre en boucle
