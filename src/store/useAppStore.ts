@@ -133,20 +133,24 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
 
   openFiles: (panelId, files) => {
     if (!files || files.length === 0) return
-    const newTabs: PdfTab[] = files.map((file) => ({
-      id: generateId(),
-      filePath: file.filePath,
-      fileName: file.fileName,
-      currentPage: 1,
-      totalPages: 0,
-      zoom: 1,
-    }))
     set((state) => ({
-      panels: state.panels.map((panel) =>
-        panel.id === panelId
-          ? { ...panel, tabs: [...panel.tabs, ...newTabs], activeTabId: newTabs[0].id }
-          : panel
-      ),
+      panels: state.panels.map((panel) => {
+        if (panel.id !== panelId) return panel
+        // Un fichier déjà ouvert dans ce panel réactive son onglet au lieu d'en créer un doublon
+        const existing = panel.tabs.find((t) => t.filePath === files[0].filePath)
+        const newTabs: PdfTab[] = files
+          .filter((file, i) => !panel.tabs.some((t) => t.filePath === file.filePath) && files.findIndex((f) => f.filePath === file.filePath) === i)
+          .map((file) => ({
+            id: generateId(),
+            filePath: file.filePath,
+            fileName: file.fileName,
+            currentPage: 1,
+            totalPages: 0,
+            zoom: 1,
+          }))
+        const activeTabId = existing?.id ?? newTabs[0]?.id ?? panel.activeTabId
+        return { ...panel, tabs: [...panel.tabs, ...newTabs], activeTabId }
+      }),
     }))
   },
 
