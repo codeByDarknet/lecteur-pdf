@@ -34,7 +34,13 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const pdfRef = useRef<PDFDocumentProxy | null>(null)
   const pageTextsPromiseRef = useRef<Promise<PageText[]> | null>(null)
   const searchIdRef = useRef(0)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
+  // Le conteneur n'existe qu'une fois le PDF chargé (rendu dans <Document>) : on suit son montage
+  const [containerEl, setContainerEl] = useState<HTMLDivElement | null>(null)
+  const setContainerRef = useCallback((el: HTMLDivElement | null) => {
+    containerRef.current = el
+    setContainerEl(el)
+  }, [])
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
 
   // Load file data (with memory cache)
@@ -160,7 +166,7 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
   const [containerWidth, setContainerWidth] = useState<number>(0)
 
   useEffect(() => {
-    const container = containerRef.current
+    const container = containerEl
     if (!container) return
 
     const updateWidth = () => {
@@ -171,18 +177,10 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
 
     updateWidth()
 
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width
-        if (width > 0) {
-          setContainerWidth(width)
-        }
-      }
-    })
-
+    const observer = new ResizeObserver(updateWidth)
     observer.observe(container)
     return () => observer.disconnect()
-  }, [fileData])
+  }, [containerEl])
 
   // Ctrl + mouse wheel zoom (intercepted globally on window with coordinates check)
   useEffect(() => {
@@ -214,15 +212,43 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
 
   const baseWidth = containerWidth > 64 ? Math.max(200, containerWidth - 48) : undefined
 
-  // Session restaurée : revenir à la page où la lecture s'était arrêtée
+  // Session restaurée : revenir à la page où la lecture s'était arrêtée.
+  // Les pages pas encore rendues ont une hauteur estimée : on se recale jusqu'à ce que la mise en page soit stable.
   const restoredPositionRef = useRef(false)
+  const restoreTimerRef = useRef<ReturnType<typeof setTimeout>>()
+  useEffect(() => () => clearTimeout(restoreTimerRef.current), [])
+
   useEffect(() => {
     if (restoredPositionRef.current || !isDocLoaded || !baseWidth || tab.totalPages === 0) return
     restoredPositionRef.current = true
-    if (tab.currentPage > 1) {
-      requestAnimationFrame(() => scrollToPage(tab.currentPage, 'auto'))
+    const target = tab.currentPage
+    const container = containerRef.current
+    if (target <= 1 || !container) return
+
+    // L'utilisateur fait défiler lui-même : on arrête de recaler
+    const stopRestore = () => {
+      clearTimeout(restoreTimerRef.current)
+      container.removeEventListener('wheel', stopRestore)
+      container.removeEventListener('pointerdown', stopRestore)
     }
-  }, [isDocLoaded, baseWidth, tab.totalPages, tab.currentPage, scrollToPage])
+    container.addEventListener('wheel', stopRestore, { passive: true })
+    container.addEventListener('pointerdown', stopRestore)
+
+    let lastTop = -1
+    let stableTicks = 0
+    let ticks = 0
+    const tick = () => {
+      const el = pageRefs.current.get(target)
+      if (el) {
+        if (Math.abs(container.scrollTop - el.offsetTop) > 1) container.scrollTop = el.offsetTop
+        stableTicks = el.offsetTop === lastTop ? stableTicks + 1 : 0
+        lastTop = el.offsetTop
+      }
+      if (stableTicks < 3 && ticks++ < 30) restoreTimerRef.current = setTimeout(tick, 100)
+      else stopRestore()
+    }
+    tick()
+  }, [isDocLoaded, baseWidth, tab.totalPages, tab.currentPage])
   const fileProp = useMemo(() => fileData ? { data: fileData } : null, [fileData])
   const pages = Array.from({ length: tab.totalPages }, (_, i) => i + 1)
 
@@ -368,8 +394,8 @@ export function PdfViewer({ tab, panelId }: PdfViewerProps) {
             />
           )}
           <div
-            ref={containerRef}
-            className="h-full overflow-auto bg-viewer p-4"
+            ref={setContainerRef}
+            className="relative h-full overflow-auto bg-viewer p-4"
             onScroll={handleScroll}
           >
             {pages.map((pageNum) => (
