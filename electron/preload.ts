@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveFileDialog: (defaultPath: string) => ipcRenderer.invoke('dialog:saveFile', defaultPath),
   writeFile: (filePath: string, data: Uint8Array) => ipcRenderer.invoke('file:write', filePath, data),
   findFont: (name: string, bold: boolean, italic: boolean) => ipcRenderer.invoke('fonts:find', name, bold, italic),
+  listFonts: () => ipcRenderer.invoke('fonts:list'),
+  findFontFamily: (family: string, bold: boolean, italic: boolean) => ipcRenderer.invoke('fonts:findFamily', family, bold, italic),
   getPendingFiles: () => ipcRenderer.invoke('app:getPendingFiles'),
   onOpenFiles: (callback: (files: Array<{ filePath: string; fileName: string }>) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, files: Array<{ filePath: string; fileName: string }>) => callback(files)

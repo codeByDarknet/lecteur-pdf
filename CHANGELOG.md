@@ -11,6 +11,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le pr
 - Mode **Édition ultra** : clic sur une ligne du PDF pour en modifier ou supprimer le texte, avec reprise de la police, de la taille et des couleurs d'origine ; gomme pour effacer une zone
 - Le texte modifié reprend la police d'origine quand elle est installée sur l'ordinateur (intégrée au PDF enregistré) ; sinon, une police standard calibrée pour garder la largeur de la ligne
 - Le texte remplacé ou effacé est retiré du flux de contenu du PDF : il n'est plus ni visible, ni copiable, ni extractible
+- Sélecteur de police avec recherche : les trois polices PDF standard et toutes les polices installées sur l'ordinateur, chacune affichée dans son propre style, avec leurs variantes grasses et italiques ; la police choisie est intégrée au PDF enregistré
 - Sélection, déplacement et redimensionnement des éléments ajoutés, annulation et rétablissement
 - Enregistrement en place ou sous un nouveau nom, avertissement avant de fermer un document modifié
 - Collage d'images depuis le presse-papiers

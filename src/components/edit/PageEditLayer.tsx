@@ -342,7 +342,8 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
     openSession({ kind: 'line', line, bg, fg, y, scaleX, systemFont })
   }
 
-  const finishSession = (text: string | null) => {
+  // keep : la saisie est validée pour changer sa police depuis la barre d'outils, même sans modification du texte
+  const finishSession = (text: string | null, keep = false) => {
     const current = session
     setSession(null)
     const s = store()
@@ -352,8 +353,8 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
     if (current.kind === 'new') {
       if (!clean.trim()) return
       const id = generateId()
-      const { fontSize, font, bold, italic, color } = s.style
-      s.add(tabId, { id, page: pageNum, type: 'text', x: current.x, y: current.y, text: clean, fontSize, font, bold, italic, color })
+      const { fontSize, font, systemFont, bold, italic, color } = s.style
+      s.add(tabId, { id, page: pageNum, type: 'text', x: current.x, y: current.y, text: clean, fontSize, font, systemFont, bold, italic, color })
       s.select({ tabId, id })
     } else if (current.kind === 'object') {
       const o = s.edits[tabId]?.objects.find((x) => x.id === current.id) as TextObject | undefined
@@ -362,7 +363,7 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
       else s.remove(tabId, [o.id])
     } else {
       const { line, bg, fg, y, scaleX, systemFont } = current
-      if (clean === line.text) return
+      if (clean === line.text && !keep) return
       const coverId = generateId()
       const objs: EditObject[] = [
         {
@@ -680,7 +681,7 @@ function TextSessionEditor({
   session: TextSession
   scale: number
   objects: EditObject[]
-  onDone: (text: string | null) => void
+  onDone: (text: string | null, keep?: boolean) => void
 }) {
   const style = useEditStore((s) => s.style)
   const ref = useRef<HTMLDivElement>(null)
@@ -765,7 +766,9 @@ function TextSessionEditor({
             ref.current?.blur()
           }
         }}
-        onBlur={() => onDone(cancelled.current ? null : ref.current?.innerText ?? '')}
+        onBlur={(e) =>
+          onDone(cancelled.current ? null : ref.current?.innerText ?? '', !!(e.relatedTarget as HTMLElement | null)?.closest('[data-edit-ui]'))
+        }
       />
     </>
   )

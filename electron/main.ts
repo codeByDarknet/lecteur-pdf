@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import fs from 'node:fs'
-import { findFont } from './fonts'
+import { findFamily, findFont, listFamilies } from './fonts'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -103,6 +103,10 @@ ipcMain.handle('file:write', async (_event, filePath: string, data: Uint8Array) 
 
 ipcMain.handle('fonts:find', (_event, name: string, bold: boolean, italic: boolean) =>
   typeof name === 'string' ? findFont(name, !!bold, !!italic).catch(() => null) : null,
+)
+ipcMain.handle('fonts:list', () => listFamilies().catch(() => []))
+ipcMain.handle('fonts:findFamily', (_event, family: string, bold: boolean, italic: boolean) =>
+  typeof family === 'string' ? findFamily(family, !!bold, !!italic).catch(() => null) : null,
 )
 
 ipcMain.handle('app:getPendingFiles', () => {

@@ -36,12 +36,20 @@ export interface SelectedPdfFile {
   fileName: string;
 }
 
+export interface FoundFont {
+  file: string;
+  family: string;
+  data: Uint8Array;
+}
+
 export interface ElectronAPI {
   openFileDialog: () => Promise<SelectedPdfFile[] | SelectedPdfFile | null>;
   readFile: (filePath: string) => Promise<ArrayBuffer>;
   saveFileDialog: (defaultPath: string) => Promise<string | null>;
   writeFile: (filePath: string, data: Uint8Array) => Promise<boolean>;
-  findFont: (name: string, bold: boolean, italic: boolean) => Promise<{ file: string; data: Uint8Array } | null>;
+  findFont: (name: string, bold: boolean, italic: boolean) => Promise<FoundFont | null>;
+  listFonts: () => Promise<Array<{ family: string; latin: boolean; bold: boolean; italic: boolean }>>;
+  findFontFamily: (family: string, bold: boolean, italic: boolean) => Promise<FoundFont | null>;
   getPendingFiles: () => Promise<SelectedPdfFile[]>;
   onOpenFiles: (callback: (files: SelectedPdfFile[]) => void) => () => void;
   minimizeWindow: () => Promise<void>;

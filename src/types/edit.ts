@@ -53,7 +53,7 @@ export interface TextObject extends BaseObject {
   coverId?: string
   // Étirement horizontal qui redonne au texte la largeur qu'il avait dans la police d'origine
   scaleX?: number
-  // Police installée reprise du PDF d'origine (voir systemFonts) ; à défaut, la police standard `font`
+  // Police installée (reprise du PDF d'origine ou choisie, voir systemFonts) ; à défaut, la police standard `font`
   systemFont?: string
 }
 
@@ -104,6 +104,7 @@ export interface EditStyle {
   strokeWidth: number
   fontSize: number
   font: FontKey
+  systemFont?: string
   bold: boolean
   italic: boolean
 }

@@ -28,10 +28,10 @@ import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { cn } from '@/lib/utils'
-import { FONT_LABELS } from '@/lib/pdfEditing'
-import { systemFontLabel } from '@/lib/systemFonts'
+import { loadFontFamily, systemFontLabel } from '@/lib/systemFonts'
 import { useEditStore } from '@/store/useEditStore'
-import type { EditObject, EditTool, FontKey, TextObject } from '@/types/edit'
+import type { EditObject, EditStyle, EditTool, TextObject } from '@/types/edit'
+import { FontPicker, useFontFamilies, type FontChoice } from './FontPicker'
 
 const ANNOTATE_TOOLS: Array<{ tool: EditTool; icon: React.ElementType; label: string }> = [
   { tool: 'select', icon: MousePointer2, label: 'Sélectionner et déplacer' },
@@ -87,17 +87,18 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
   const selected = useEditStore((s): EditObject | undefined =>
     s.selection?.tabId === tabId ? s.edits[tabId]?.objects.find((o) => o.id === s.selection!.id) : undefined
   )
+  const families = useFontFamilies()
   if (!mode) return null
 
   const tools = mode === 'ultra' ? ULTRA_TOOLS : ANNOTATE_TOOLS
   const selectedText = selected?.type === 'text' ? (selected as TextObject) : undefined
   const isMarkTool = tool === 'highlight'
-  const showText = tool === 'text' || !!selectedText
+  const showText = tool === 'text' || tool === 'edit-text' || !!selectedText
   const showStroke = ['ink', 'rect', 'ellipse', 'arrow', 'line'].includes(tool) || selected?.type === 'shape' || selected?.type === 'ink'
   const showColor = tool !== 'image' && tool !== 'whiteout' && tool !== 'edit-text' || !!selectedText
 
   // Les réglages s'appliquent à l'objet sélectionné, et deviennent la valeur par défaut des suivants
-  const applyStyle = (patch: Partial<typeof style>) => {
+  const applyStyle = (patch: Partial<EditStyle>) => {
     setStyle(patch)
     if (!selected) return
     const objectPatch: Record<string, unknown> = {}
@@ -109,22 +110,43 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
       if (patch.fontSize) objectPatch.fontSize = patch.fontSize
       if (patch.bold !== undefined) objectPatch.bold = patch.bold
       if (patch.italic !== undefined) objectPatch.italic = patch.italic
-      // Autre police ou autre style : on quitte la police reprise du PDF, et son étirement ne vaut plus
-      if (patch.font || patch.bold !== undefined || patch.italic !== undefined) {
-        Object.assign(objectPatch, { font: patch.font ?? selected.font, scaleX: 1, systemFont: undefined })
-      }
+      if (patch.font) objectPatch.font = patch.font
+      if ('systemFont' in patch) objectPatch.systemFont = patch.systemFont
+      // Autre police ou autre style : l'étirement calculé pour la police d'origine ne vaut plus
+      if (patch.font || 'systemFont' in patch || patch.bold !== undefined || patch.italic !== undefined) objectPatch.scaleX = 1
     }
     if (Object.keys(objectPatch).length) update(tabId, selected.id, objectPatch)
+  }
+
+  // Police installée : on charge la variante (grasse, italique) la plus proche du style voulu
+  const applyFamily = async (family: string, bold: boolean, italic: boolean) => {
+    const found = await loadFontFamily(family, bold, italic)
+    if (found) applyStyle({ systemFont: found.id, bold, italic })
+  }
+
+  const chooseFont = (choice: FontChoice) => {
+    if (choice.kind === 'standard') applyStyle({ font: choice.font, systemFont: undefined })
+    else void applyFamily(choice.family, current.bold, current.italic)
+  }
+
+  const toggleStyle = (patch: { bold?: boolean; italic?: boolean }) => {
+    const bold = patch.bold ?? current.bold
+    const italic = patch.italic ?? current.italic
+    if (currentFamily) void applyFamily(currentFamily, bold, italic)
+    else applyStyle(patch)
   }
 
   const current = {
     color: selectedText?.color ?? (selected && 'color' in selected && selected.type !== 'cover' ? selected.color : style.color),
     fontSize: selectedText?.fontSize ?? style.fontSize,
     font: selectedText?.font ?? style.font,
+    systemFont: selectedText ? selectedText.systemFont : style.systemFont,
     bold: selectedText?.bold ?? style.bold,
     italic: selectedText?.italic ?? style.italic,
     strokeWidth: selected?.type === 'shape' || selected?.type === 'ink' ? selected.width : style.strokeWidth,
   }
+  const currentFamily = current.systemFont ? systemFontLabel(current.systemFont) : undefined
+  const familyInfo = families.find((f) => f.family === currentFamily)
   const palette = isMarkTool || selected?.type === 'markup' && selected.kind === 'highlight' ? MARK_COLORS : COLORS
   const activeColor = isMarkTool || selected?.type === 'markup' && selected.kind === 'highlight'
     ? (selected?.type === 'markup' ? selected.color : style.markColor)
@@ -156,7 +178,7 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
       data-edit-ui=""
       // Garder le focus dans le texte en cours de saisie quand on clique un bouton
       onPointerDown={(e) => {
-        if (!(e.target as HTMLElement).closest('select')) e.preventDefault()
+        if (!(e.target as HTMLElement).closest('select, input:not([type=color])')) e.preventDefault()
       }}
       className="flex items-center gap-0.5 min-h-10 px-2 py-1 flex-wrap bg-toolbar border-b border-border"
     >
@@ -207,16 +229,7 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
 
       {showText && (
         <div className="flex items-center gap-1 px-1">
-          <select
-            value={selectedText?.systemFont ? 'system' : current.font}
-            onChange={(e) => e.target.value !== 'system' && applyStyle({ font: e.target.value as FontKey })}
-            className="h-6 rounded border border-border bg-background px-1 text-xs"
-          >
-            {selectedText?.systemFont && <option value="system">{systemFontLabel(selectedText.systemFont)}</option>}
-            {(Object.keys(FONT_LABELS) as FontKey[]).map((f) => (
-              <option key={f} value={f}>{FONT_LABELS[f]}</option>
-            ))}
-          </select>
+          <FontPicker family={currentFamily} font={current.font} onChange={chooseFont} />
           <select
             value={SIZES.includes(Math.round(current.fontSize)) ? Math.round(current.fontSize) : ''}
             onChange={(e) => applyStyle({ fontSize: Number(e.target.value) })}
@@ -225,8 +238,8 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
             {!SIZES.includes(Math.round(current.fontSize)) && <option value="">{current.fontSize.toFixed(1)}</option>}
             {SIZES.map((s) => <option key={s} value={s}>{s}</option>)}
           </select>
-          {iconButton('bold', Bold, 'Gras', current.bold, () => applyStyle({ bold: !current.bold }))}
-          {iconButton('italic', Italic, 'Italique', current.italic, () => applyStyle({ italic: !current.italic }))}
+          {iconButton('bold', Bold, familyInfo && !familyInfo.bold ? 'Pas de variante grasse pour cette police' : 'Gras', current.bold, () => toggleStyle({ bold: !current.bold }), !!familyInfo && !familyInfo.bold && !current.bold)}
+          {iconButton('italic', Italic, familyInfo && !familyInfo.italic ? 'Pas de variante italique pour cette police' : 'Italique', current.italic, () => toggleStyle({ italic: !current.italic }), !!familyInfo && !familyInfo.italic && !current.italic)}
         </div>
       )}
 
