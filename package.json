@@ -40,7 +40,7 @@
     "autoprefixer": "^10.4.17",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
-    "electron": "^28.2.2",
+    "electron": "^44.7.0",
     "electron-builder": "^24.13.3",
     "lucide-react": "^0.344.0",
     "pdf-lib": "^1.17.1",
