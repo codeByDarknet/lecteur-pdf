@@ -25,7 +25,7 @@ export function TitleBar() {
       {/* App title / drag region */}
       <div className="flex items-center gap-2 px-4 flex-1" style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}>
         <img src="./pdf_multipanel_logo.svg" alt="" width={20} height={20} draggable={false} />
-        <span className="text-xs text-muted-foreground font-medium">Lecteur PDF</span>
+        <span className="text-xs text-muted-foreground font-medium">ZackPDF</span>
       </div>
 
       {/* Theme toggle & Window controls */}

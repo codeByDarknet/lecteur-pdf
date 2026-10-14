@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="website/assets/logo.svg" width="128" height="128" alt="Logo de Lecteur PDF">
+  <img src="website/assets/logo.svg" width="128" height="128" alt="Logo de ZackPDF">
 </p>
 
-<h1 align="center">Lecteur PDF</h1>
+<h1 align="center">ZackPDF</h1>
 
 <p align="center">
   Un lecteur PDF gratuit et open source, avec onglets et panneaux côte à côte.<br>
@@ -10,18 +10,18 @@
 </p>
 
 <p align="center">
-  <a href="https://codebydarknet.github.io/lecteur-pdf/"><b>Site et téléchargements</b></a> ·
-  <a href="https://github.com/codeByDarknet/lecteur-pdf/releases/latest">Dernière version</a> ·
-  <a href="https://github.com/codeByDarknet/lecteur-pdf/issues/new/choose">Signaler un bug</a>
+  <a href="https://codebydarknet.github.io/zackpdf/"><b>Site et téléchargements</b></a> ·
+  <a href="https://github.com/codeByDarknet/zackpdf/releases/latest">Dernière version</a> ·
+  <a href="https://github.com/codeByDarknet/zackpdf/issues/new/choose">Signaler un bug</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/codeByDarknet/lecteur-pdf/actions/workflows/ci.yml"><img src="https://github.com/codeByDarknet/lecteur-pdf/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/codeByDarknet/lecteur-pdf/releases/latest"><img src="https://img.shields.io/github/v/release/codeByDarknet/lecteur-pdf?label=version" alt="Version"></a>
+  <a href="https://github.com/codeByDarknet/zackpdf/actions/workflows/ci.yml"><img src="https://github.com/codeByDarknet/zackpdf/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/codeByDarknet/zackpdf/releases/latest"><img src="https://img.shields.io/github/v/release/codeByDarknet/zackpdf?label=version" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="Licence MIT"></a>
 </p>
 
-![Lecteur PDF : deux documents affichés côte à côte](website/assets/capture-sombre.png)
+![ZackPDF : deux documents affichés côte à côte](website/assets/capture-sombre.png)
 
 ## Fonctionnalités
 
@@ -37,40 +37,41 @@
 
 ## Installation
 
-Téléchargez la version pour votre système sur le [site](https://codebydarknet.github.io/lecteur-pdf/#telecharger) ou dans les [releases GitHub](https://github.com/codeByDarknet/lecteur-pdf/releases/latest).
+Téléchargez la version pour votre système sur le [site](https://codebydarknet.github.io/zackpdf/#telecharger) ou dans les [releases GitHub](https://github.com/codeByDarknet/zackpdf/releases/latest).
 
-| Système | Fichier |
-|---|---|
-| Windows 10/11 | `Lecteur-PDF-Windows-Setup.exe` (installateur) ou `Lecteur-PDF-Windows-Portable.exe` |
-| macOS Apple Silicon | `Lecteur-PDF-macOS-arm64.dmg` |
-| macOS Intel | `Lecteur-PDF-macOS-x64.dmg` |
-| Ubuntu, Debian, Mint… | `lecteur-pdf_amd64.deb` |
-| Fedora, openSUSE… | `lecteur-pdf.x86_64.rpm` |
-| Toute distribution Linux | `Lecteur-PDF-Linux-x86_64.AppImage` ou `Lecteur-PDF-Linux-x64.tar.gz` |
+| Système                 | Fichier                                                                                  |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| Windows 10/11            | `ZackPDF-Windows-Setup.exe` (installateur) ou `ZackPDF-Windows-Portable.exe` |
+| macOS Apple Silicon      | `ZackPDF-macOS-arm64.dmg`                                                          |
+| macOS Intel              | `ZackPDF-macOS-x64.dmg`                                                            |
+| Ubuntu, Debian, Mint…   | `zackpdf_amd64.deb`                                                                |
+| Fedora, openSUSE…       | `zackpdf.x86_64.rpm`                                                               |
+| Toute distribution Linux | `ZackPDF-Linux-x86_64.AppImage` ou `ZackPDF-Linux-x64.tar.gz`                |
 
 > **Applications non signées.** Les certificats Apple et Microsoft sont payants et l'application n'en a pas encore.
+>
 > - **Windows** : « Windows a protégé votre ordinateur » → *Informations complémentaires* → *Exécuter quand même*.
-> - **macOS** : clic droit sur l'app → *Ouvrir*. Si macOS la dit endommagée : `xattr -cr "/Applications/Lecteur PDF.app"`.
+> - **macOS** : clic droit sur l'app → *Ouvrir*. Si macOS la dit endommagée : `xattr -cr "/Applications/ZackPDF.app"`.
 
 ## Développement
 
 Prérequis : [Node.js](https://nodejs.org/) 20 ou plus récent.
 
 ```bash
-git clone https://github.com/codeByDarknet/lecteur-pdf.git
-cd lecteur-pdf
+git clone https://github.com/codeByDarknet/zackpdf.git
+cd zackpdf
 npm install
 npm run dev          # lance l'application avec rechargement à chaud
 ```
 
-| Commande | Rôle |
-|---|---|
-| `npm run dev` | Lance l'application en développement |
-| `npm run typecheck` | Vérifie les types TypeScript |
-| `npm run build` | Compile l'interface et le processus principal |
-| `npm run dist:linux` | Construit les paquets Linux dans `release/` |
-| `npm run dist:win` | Construit les paquets Windows |
-| `npm run dist:mac` | Construit les paquets macOS (sur un Mac) |
+| Commande               | Rôle                                         |
+| ---------------------- | --------------------------------------------- |
+| `npm run dev`        | Lance l'application en développement         |
+| `npm run typecheck`  | Vérifie les types TypeScript                 |
+| `npm run build`      | Compile l'interface et le processus principal |
+| `npm run dist:linux` | Construit les paquets Linux dans `release/`  |
+| `npm run dist:win`   | Construit les paquets Windows                 |
+| `npm run dist:mac`   | Construit les paquets macOS (sur un Mac)      |
 
 ### Technologies
 

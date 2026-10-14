@@ -1,5 +1,5 @@
-appId: io.github.codebydarknet.lecteurpdf
-productName: Lecteur PDF
+appId: io.github.codebydarknet.zackpdf
+productName: ZackPDF
 copyright: Copyright © 2026 Abdoul Razack Ouedraogo
 directories:
   buildResources: build
@@ -13,7 +13,7 @@ fileAssociations:
     mimeType: application/pdf
     role: Viewer
 # Noms de fichiers sans numéro de version : le site pointe vers
-# https://github.com/codeByDarknet/lecteur-pdf/releases/latest/download/<nom>
+# https://github.com/codeByDarknet/zackpdf/releases/latest/download/<nom>
 publish: null
 
 win:
@@ -25,16 +25,16 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
-  artifactName: Lecteur-PDF-Windows-Setup.${ext}
+  artifactName: ZackPDF-Windows-Setup.${ext}
 portable:
-  artifactName: Lecteur-PDF-Windows-Portable.${ext}
+  artifactName: ZackPDF-Windows-Portable.${ext}
 
 mac:
   category: public.app-category.productivity
   target:
     - target: dmg
       arch: [arm64, x64]
-  artifactName: Lecteur-PDF-macOS-${arch}.${ext}
+  artifactName: ZackPDF-macOS-${arch}.${ext}
 
 linux:
   target:
@@ -46,14 +46,14 @@ linux:
       arch: [x64]
     - target: tar.gz
       arch: [x64]
-  executableName: lecteur-pdf
+  executableName: zackpdf
   category: Office
-  synopsis: Lecteur PDF avec onglets et panneaux multiples
+  synopsis: Le lecteur PDF avec onglets et panneaux multiples
   mimeTypes:
     - application/pdf
   icon: build/icon.png
-  artifactName: Lecteur-PDF-Linux-${arch}.${ext}
+  artifactName: ZackPDF-Linux-${arch}.${ext}
 deb:
-  artifactName: lecteur-pdf_${arch}.${ext}
+  artifactName: zackpdf_${arch}.${ext}
 rpm:
-  artifactName: lecteur-pdf.${arch}.${ext}
+  artifactName: zackpdf.${arch}.${ext}

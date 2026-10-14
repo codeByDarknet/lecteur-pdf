@@ -8,7 +8,7 @@ Seule la dernière version publiée reçoit des correctifs de sécurité.
 
 Merci de **ne pas** ouvrir d'issue publique pour une faille de sécurité.
 
-Utilisez plutôt le [signalement privé de GitHub](https://github.com/codeByDarknet/lecteur-pdf/security/advisories/new), ou écrivez à **abdoulrazackouedraogo1@gmail.com** en décrivant :
+Utilisez plutôt le [signalement privé de GitHub](https://github.com/codeByDarknet/zackpdf/security/advisories/new), ou écrivez à **abdoulrazackouedraogo1@gmail.com** en décrivant :
 
 - le problème et son impact possible ;
 - les étapes ou le fichier PDF permettant de le reproduire ;

@@ -1,10 +1,10 @@
-# Contribuer à Lecteur PDF
+# Contribuer à ZackPDF
 
-Merci de vouloir améliorer Lecteur PDF ! Toutes les contributions sont les bienvenues : signalement de bugs, idées, corrections, traductions, documentation.
+Merci de vouloir améliorer ZackPDF ! Toutes les contributions sont les bienvenues : signalement de bugs, idées, corrections, traductions, documentation.
 
 ## Signaler un bug ou proposer une idée
 
-Ouvrez une [issue](https://github.com/codeByDarknet/lecteur-pdf/issues/new/choose) en choisissant le modèle adapté. Pour un bug, précisez votre système, la version de l'application et les étapes pour le reproduire.
+Ouvrez une [issue](https://github.com/codeByDarknet/zackpdf/issues/new/choose) en choisissant le modèle adapté. Pour un bug, précisez votre système, la version de l'application et les étapes pour le reproduire.
 
 Pour une faille de sécurité, suivez plutôt la [politique de sécurité](SECURITY.md).
 

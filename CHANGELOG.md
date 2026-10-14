@@ -1,7 +1,13 @@
 # Historique des versions
 
-Toutes les évolutions notables de Lecteur PDF sont listées ici.
+Toutes les évolutions notables de ZackPDF sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet utilise le [versionnage sémantique](https://semver.org/lang/fr/).
+
+## [1.0.1] — 2026-10-14
+
+### Modifié
+
+- L'application s'appelle désormais **ZackPDF** (nom, paquets, site et dépôt GitHub)
 
 ## [1.0.0] — 2026-10-13
 
@@ -18,4 +24,5 @@ Première version publique.
 - Restauration de la session (onglets, panneaux, page courante) au redémarrage
 - Paquets pour Windows (installateur et portable), macOS (Apple Silicon et Intel) et Linux (AppImage, .deb, .rpm, .tar.gz)
 
-[1.0.0]: https://github.com/codeByDarknet/lecteur-pdf/releases/tag/v1.0.0
+[1.0.1]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.0.1
+[1.0.0]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.0.0

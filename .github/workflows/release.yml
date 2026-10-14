@@ -76,5 +76,5 @@ jobs:
         run: >
           gh release create "$GITHUB_REF_NAME" paquets/*
           --repo "$GITHUB_REPOSITORY"
-          --title "Lecteur PDF $GITHUB_REF_NAME"
+          --title "ZackPDF $GITHUB_REF_NAME"
           --generate-notes

@@ -281,7 +281,7 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
     }))
   },
 }), {
-  name: 'lecteur-pdf-session',
+  name: 'zackpdf-session',
   version: 1,
   partialize: (state): PersistedSession => ({
     panels: sessionPanels(state.panels),

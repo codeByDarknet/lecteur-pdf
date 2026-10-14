@@ -1,5 +1,5 @@
 name: Proposer une fonctionnalité
-description: Une idée pour améliorer Lecteur PDF
+description: Une idée pour améliorer ZackPDF
 labels: [amélioration]
 body:
   - type: textarea
