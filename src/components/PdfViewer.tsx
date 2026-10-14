@@ -6,7 +6,13 @@ import { PdfToolbar } from './PdfToolbar'
 import { SearchBar } from './SearchBar'
 import { ThumbnailSidebar } from './ThumbnailSidebar'
 import { LazyPdfPage } from './LazyPdfPage'
-import { getCachedPdfData } from '@/lib/fileCache'
+import { EditToolbar } from './edit/EditToolbar'
+import { pageSizes } from './edit/PageEditLayer'
+import { clearPdfCache, getCachedPdfData } from '@/lib/fileCache'
+import { exportEditedPdf } from '@/lib/pdfEditing'
+import { fitImage, loadImageFile } from '@/lib/editImages'
+import { generateId } from '@/lib/utils'
+import { useEditStore } from '@/store/useEditStore'
 import { extractPageTexts, findMatches, createHighlightRenderer, type PageText, type SearchMatch } from '@/lib/pdfSearch'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore, MIN_ZOOM, MAX_ZOOM } from '@/store/useAppStore'
@@ -54,6 +60,10 @@ function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
     setContainerEl(el)
   }, [])
   const pageRefs = useRef<Map<number, HTMLDivElement>>(new Map())
+  const editMode = useEditStore((s) => s.modes[tab.id])
+  const fileVersion = useEditStore((s) => s.fileVersions[tab.filePath] ?? 0)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   // Load file data (with memory cache)
   useEffect(() => {
@@ -78,7 +88,7 @@ function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
     return () => {
       isMounted = false
     }
-  }, [tab.filePath])
+  }, [tab.filePath, fileVersion])
 
   const onDocumentLoadSuccess = useCallback(
     (pdf: PDFDocumentProxy) => {
@@ -155,6 +165,115 @@ function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
     setCurrentPage(panelId, tab.id, page)
     scrollToPage(page)
   }, [panelId, tab.id, setCurrentPage, scrollToPage])
+
+  const canSaveInPlace = !!window.electronAPI && !tab.filePath.startsWith('blob:')
+
+  // Applique les modifications au PDF (pdf-lib) puis écrit le fichier
+  const handleSave = useCallback(async (asCopy: boolean) => {
+    const edit = useEditStore.getState()
+    const objects = edit.edits[tab.id]?.objects ?? []
+    const pdf = pdfRef.current
+    if (objects.length === 0 || !pdf || saving) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      const original = await getCachedPdfData(tab.filePath)
+      if (!original) throw new Error('Fichier d’origine illisible')
+      const bytes = await exportEditedPdf(original, pdf, objects)
+      const suggested = asCopy ? tab.fileName.replace(/\.pdf$/i, '') + ' (modifié).pdf' : tab.fileName
+      const api = window.electronAPI
+      if (!api) {
+        // Hors Electron : téléchargement
+        const url = URL.createObjectURL(new Blob([bytes as BlobPart], { type: 'application/pdf' }))
+        const a = document.createElement('a')
+        a.href = url
+        a.download = suggested
+        a.click()
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+        return
+      }
+      let target = tab.filePath
+      if (asCopy || !canSaveInPlace) {
+        const dir = canSaveInPlace ? tab.filePath.slice(0, tab.filePath.length - tab.fileName.length) : ''
+        const chosen = await api.saveFileDialog(dir + suggested)
+        if (!chosen) return
+        target = chosen
+      }
+      await api.writeFile(target, bytes)
+      clearPdfCache(target)
+      edit.clear(tab.id)
+      if (target !== tab.filePath) {
+        clearPdfCache(tab.filePath)
+        useAppStore.getState().setTabFile(tab.id, target, target.split(/[\\/]/).pop() ?? target)
+      }
+      edit.bumpFileVersion(target)
+    } catch (err) {
+      console.error('Save failed:', err)
+      setSaveError(`Enregistrement impossible : ${err instanceof Error ? err.message : err}`)
+    } finally {
+      setSaving(false)
+    }
+  }, [tab.id, tab.filePath, tab.fileName, canSaveInPlace, saving])
+
+  const handleSaveRef = useRef(handleSave)
+  handleSaveRef.current = handleSave
+
+  // Raccourcis d'édition
+  useEffect(() => {
+    if (!isActiveViewer || !editMode) return
+    const isTyping = (t: EventTarget | null) =>
+      t instanceof HTMLElement && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName))
+    const onKeyDown = (e: KeyboardEvent) => {
+      const s = useEditStore.getState()
+      const ctrl = e.ctrlKey || e.metaKey
+      const key = e.key.toLowerCase()
+      if (ctrl && key === 's') {
+        e.preventDefault()
+        handleSaveRef.current(e.shiftKey)
+        return
+      }
+      if (isTyping(e.target)) return
+      if (ctrl && key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        s.undo(tab.id)
+      } else if (ctrl && (key === 'y' || (key === 'z' && e.shiftKey))) {
+        e.preventDefault()
+        s.redo(tab.id)
+      } else if ((e.key === 'Delete' || e.key === 'Backspace') && s.selection?.tabId === tab.id) {
+        e.preventDefault()
+        s.remove(tab.id, [s.selection.id])
+      } else if (e.key === 'Escape') {
+        if (s.selection) s.select(null)
+        else s.setTool(s.modes[tab.id] === 'ultra' ? 'edit-text' : 'select')
+      }
+    }
+    // Coller une image depuis le presse-papiers : elle arrive au centre de la page courante
+    const onPaste = async (e: ClipboardEvent) => {
+      if (isTyping(e.target)) return
+      const file = Array.from(e.clipboardData?.files ?? []).find((f) => f.type.startsWith('image/'))
+      if (!file) return
+      e.preventDefault()
+      const page = useAppStore.getState().panels.flatMap((p) => p.tabs).find((t) => t.id === tab.id)?.currentPage ?? 1
+      const size = pageSizes.get(`${tab.id}:${page}`)
+      if (!size) return
+      try {
+        const img = await loadImageFile(file)
+        const { w, h } = fitImage(img.width, img.height, size.w)
+        const id = generateId()
+        const s = useEditStore.getState()
+        s.add(tab.id, { id, page, type: 'image', x: (size.w - w) / 2, y: (size.h - h) / 2, w, h, src: img.src })
+        s.select({ tabId: tab.id, id })
+      } catch (err) {
+        console.error('Paste failed:', err)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    window.addEventListener('paste', onPaste)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      window.removeEventListener('paste', onPaste)
+    }
+  }, [isActiveViewer, editMode, tab.id])
 
   // Keyboard shortcuts (ref pour toujours appeler les handlers à jour)
   const shortcutHandlersRef = useRef({ handleZoomIn, handleZoomOut, handleZoomFit })
@@ -380,7 +499,22 @@ function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
         onToggleThumbnails={() => toggleThumbnails(panelId)}
         onToggleSearch={() => setShowSearch(!showSearch)}
         onSplitPanel={() => addPanel(tab)}
+        editing={!!editMode}
+        onToggleEdit={() => useEditStore.getState().setMode(tab.id, editMode ? null : 'annotate')}
       />
+      <EditToolbar
+        tabId={tab.id}
+        saving={saving}
+        canSaveInPlace={canSaveInPlace}
+        onSave={handleSave}
+        onClose={() => useEditStore.getState().setMode(tab.id, null)}
+      />
+      {saveError && (
+        <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-red-500/10 text-red-400 border-b border-red-500/30">
+          <span className="flex-1">{saveError}</span>
+          <button className="underline" onClick={() => setSaveError(null)}>Fermer</button>
+        </div>
+      )}
       <Document
         file={fileProp}
         onLoadSuccess={onDocumentLoadSuccess}
@@ -423,6 +557,7 @@ function PdfViewerComponent({ tab, panelId }: PdfViewerProps) {
             {pages.map((pageNum) => (
               <LazyPdfPage
                 key={pageNum}
+                tabId={tab.id}
                 pageNum={pageNum}
                 baseWidth={baseWidth}
                 zoom={tab.zoom}

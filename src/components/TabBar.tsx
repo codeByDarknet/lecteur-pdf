@@ -3,6 +3,7 @@ import { X, Plus, PanelRightClose, GripVertical } from 'lucide-react'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
 import { cn } from '@/lib/utils'
+import { useEditStore } from '@/store/useEditStore'
 import type { PdfTab } from '@/types'
 
 interface TabBarProps {
@@ -33,6 +34,7 @@ export function TabBar({
   onMoveTab,
 }: TabBarProps) {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const edits = useEditStore((s) => s.edits)
 
   const handleDragStart = (e: React.DragEvent, tab: PdfTab, index: number) => {
     e.dataTransfer.setData(
@@ -155,6 +157,9 @@ export function TabBar({
               <polyline points="14 2 14 8 20 8" />
             </svg>
             <span className="truncate select-none pointer-events-none">{tab.fileName}</span>
+            {(edits[tab.id]?.objects.length ?? 0) > 0 && (
+              <span title="Modifications non enregistrées" className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-400" />
+            )}
             <button
               className="ml-auto shrink-0 rounded-sm p-0.5 opacity-0 group-hover:opacity-100 hover:bg-accent transition-opacity"
               onClick={(e) => {

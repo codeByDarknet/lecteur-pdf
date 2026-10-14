@@ -25,6 +25,9 @@
 
 ## Fonctionnalités
 
+- **Annotations** : surligner, souligner, barrer, ajouter du texte, dessiner à main levée, formes, flèches et images
+- **Édition ultra** : modifier ou supprimer le texte d'origine du PDF comme dans un traitement de texte, effacer une zone, insérer des images. L'ancien texte est réellement retiré du fichier, pas seulement masqué
+- Enregistrement en place (`Ctrl + S`) ou sous un nouveau nom (`Ctrl + Maj + S`), annulation illimitée (`Ctrl + Z` / `Ctrl + Y`), collage d'images depuis le presse-papiers
 - **Panneaux côte à côte** pour comparer deux documents, ou deux endroits du même document
 - **Onglets** que l'on peut réordonner et glisser d'un panneau à l'autre
 - **Recherche dans tout le document** avec surlignage des occurrences (`Ctrl + F`)

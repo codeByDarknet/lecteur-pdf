@@ -4,6 +4,7 @@ import { TabBar } from './TabBar'
 import { PdfViewer } from './PdfViewer'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '@/store/useAppStore'
+import { hasUnsavedEdits, useEditStore } from '@/store/useEditStore'
 import { cn, selectPdfFiles } from '@/lib/utils'
 import type { Panel as PanelType } from '@/types'
 
@@ -41,9 +42,21 @@ export const PdfPanel = React.memo(function PdfPanel({ panel, isActive, showClos
     }
   }, [panel.id, openFiles])
 
+  const handleCloseTab = useCallback(
+    (tabId: string) => {
+      if (hasUnsavedEdits(tabId) && !window.confirm('Ce PDF a des modifications non enregistrées. Fermer quand même ?')) return
+      useEditStore.getState().clear(tabId)
+      closeTab(panel.id, tabId)
+    },
+    [panel.id, closeTab]
+  )
+
   const handleClosePanel = useCallback(() => {
+    const dirty = panel.tabs.filter((t) => hasUnsavedEdits(t.id))
+    if (dirty.length > 0 && !window.confirm('Des PDF de ce panel ont des modifications non enregistrées. Fermer quand même ?')) return
+    panel.tabs.forEach((t) => useEditStore.getState().clear(t.id))
     removePanel(panel.id)
-  }, [panel.id, removePanel])
+  }, [panel.id, panel.tabs, removePanel])
 
   const handleReorderTabs = useCallback(
     (fromIndex: number, toIndex: number) => {
@@ -126,7 +139,7 @@ export const PdfPanel = React.memo(function PdfPanel({ panel, isActive, showClos
         panelId={panel.id}
         showCloseButton={showCloseButton}
         onSelectTab={(tabId) => setActiveTab(panel.id, tabId)}
-        onCloseTab={(tabId) => closeTab(panel.id, tabId)}
+        onCloseTab={handleCloseTab}
         onOpenFile={handleOpenFile}
         onDropFiles={(files) => openFiles(panel.id, files)}
         onClosePanel={handleClosePanel}

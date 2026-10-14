@@ -1,7 +1,7 @@
 {
   "name": "zackpdf",
   "private": true,
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "ZackPDF, le lecteur PDF gratuit et open source avec onglets et panneaux multiples",
   "author": {
     "name": "Abdoul Razack Ouedraogo",
@@ -42,6 +42,7 @@
     "electron": "^28.2.2",
     "electron-builder": "^24.13.3",
     "lucide-react": "^0.344.0",
+    "pdf-lib": "^1.17.1",
     "postcss": "^8.4.35",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

@@ -79,6 +79,27 @@ ipcMain.handle('file:read', async (_event, filePath: string) => {
   }
 })
 
+ipcMain.handle('dialog:saveFile', async (_event, defaultPath: string) => {
+  if (!win) return null
+  const result = await dialog.showSaveDialog(win, {
+    defaultPath,
+    filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+  })
+  if (result.canceled || !result.filePath) return null
+  return isPdfPath(result.filePath) ? result.filePath : `${result.filePath}.pdf`
+})
+
+ipcMain.handle('file:write', async (_event, filePath: string, data: Uint8Array) => {
+  if (typeof filePath !== 'string' || !isPdfPath(filePath) || !(data instanceof Uint8Array)) {
+    throw new Error('Écriture refusée')
+  }
+  // Écriture atomique : un fichier temporaire puis renommage, pour ne jamais laisser un PDF à moitié écrit
+  const tmp = `${filePath}.${process.pid}.tmp`
+  await fs.promises.writeFile(tmp, data)
+  await fs.promises.rename(tmp, filePath)
+  return true
+})
+
 ipcMain.handle('app:getPendingFiles', () => {
   rendererReady = true
   const files = pendingFiles
@@ -127,6 +148,21 @@ function createWindow() {
   // Prévient l'interface au lieu qu'elle interroge l'état de la fenêtre en boucle
   win.on('maximize', () => win?.webContents.send('window:maximized-changed', true))
   win.on('unmaximize', () => win?.webContents.send('window:maximized-changed', false))
+
+  // L'interface bloque la fermeture quand des modifications ne sont pas enregistrées
+  win.webContents.on('will-prevent-unload', (event) => {
+    if (!win) return
+    const choice = dialog.showMessageBoxSync(win, {
+      type: 'warning',
+      buttons: ['Quitter sans enregistrer', 'Annuler'],
+      defaultId: 1,
+      cancelId: 1,
+      title: 'Modifications non enregistrées',
+      message: 'Certains PDF ont des modifications non enregistrées.',
+      detail: 'Si vous quittez maintenant, elles seront perdues.',
+    })
+    if (choice === 0) event.preventDefault()
+  })
 
   win.webContents.on('did-start-loading', () => {
     rendererReady = false

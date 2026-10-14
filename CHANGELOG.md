@@ -3,6 +3,23 @@
 Toutes les évolutions notables de ZackPDF sont listées ici.
 Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le projet utilise le [versionnage sémantique](https://semver.org/lang/fr/).
 
+## [1.1.0] — 2026-10-14
+
+### Ajouté
+
+- Mode **Annoter** : surlignage, soulignement et barré du texte sélectionné, zones de texte libres (police, taille, gras, italique, couleur), dessin à main levée, rectangles, ellipses, lignes, flèches et images
+- Mode **Édition ultra** : clic sur une ligne du PDF pour en modifier ou supprimer le texte, avec reprise de la police, de la taille et des couleurs d'origine ; gomme pour effacer une zone
+- Le texte remplacé ou effacé est retiré du flux de contenu du PDF : il n'est plus ni visible, ni copiable, ni extractible
+- Sélection, déplacement et redimensionnement des éléments ajoutés, annulation et rétablissement
+- Enregistrement en place ou sous un nouveau nom, avertissement avant de fermer un document modifié
+- Collage d'images depuis le presse-papiers
+
+## [1.0.2] — 2026-10-14
+
+### Corrigé
+
+- L'icône de ZackPDF s'affiche dans le menu des applications et le dock sous Linux
+
 ## [1.0.1] — 2026-10-14
 
 ### Modifié
@@ -24,5 +41,7 @@ Première version publique.
 - Restauration de la session (onglets, panneaux, page courante) au redémarrage
 - Paquets pour Windows (installateur et portable), macOS (Apple Silicon et Intel) et Linux (AppImage, .deb, .rpm, .tar.gz)
 
+[1.1.0]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.1.0
+[1.0.2]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.0.2
 [1.0.1]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.0.1
 [1.0.0]: https://github.com/codeByDarknet/zackpdf/releases/tag/v1.0.0

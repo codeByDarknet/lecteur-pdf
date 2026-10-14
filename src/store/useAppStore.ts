@@ -39,6 +39,7 @@ interface AppState {
   openFile: (panelId: string, filePath: string, fileName: string) => void
   openFiles: (panelId: string, files: Array<{ filePath: string; fileName: string }>) => void
   closeTab: (panelId: string, tabId: string) => void
+  setTabFile: (tabId: string, filePath: string, fileName: string) => void
   setActiveTab: (panelId: string, tabId: string) => void
   moveTab: (fromPanelId: string, toPanelId: string, tabId: string, insertIndex?: number) => void
   reorderTabs: (panelId: string, fromIndex: number, toIndex: number) => void
@@ -175,6 +176,15 @@ export const useAppStore = create<AppState>()(persist((set, get) => ({
       }),
     }))
     releaseClosedFiles(before, get().panels)
+  },
+
+  setTabFile: (tabId, filePath, fileName) => {
+    set((state) => ({
+      panels: state.panels.map((panel) => ({
+        ...panel,
+        tabs: panel.tabs.map((t) => (t.id === tabId ? { ...t, filePath, fileName } : t)),
+      })),
+    }))
   },
 
   setActiveTab: (panelId, tabId) => {

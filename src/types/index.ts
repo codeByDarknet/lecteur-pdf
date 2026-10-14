@@ -39,6 +39,8 @@ export interface SelectedPdfFile {
 export interface ElectronAPI {
   openFileDialog: () => Promise<SelectedPdfFile[] | SelectedPdfFile | null>;
   readFile: (filePath: string) => Promise<ArrayBuffer>;
+  saveFileDialog: (defaultPath: string) => Promise<string | null>;
+  writeFile: (filePath: string, data: Uint8Array) => Promise<boolean>;
   getPendingFiles: () => Promise<SelectedPdfFile[]>;
   onOpenFiles: (callback: (files: SelectedPdfFile[]) => void) => () => void;
   minimizeWindow: () => Promise<void>;

@@ -9,6 +9,8 @@ try {
 contextBridge.exposeInMainWorld('electronAPI', {
   openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
   readFile: (filePath: string) => ipcRenderer.invoke('file:read', filePath),
+  saveFileDialog: (defaultPath: string) => ipcRenderer.invoke('dialog:saveFile', defaultPath),
+  writeFile: (filePath: string, data: Uint8Array) => ipcRenderer.invoke('file:write', filePath, data),
   getPendingFiles: () => ipcRenderer.invoke('app:getPendingFiles'),
   onOpenFiles: (callback: (files: Array<{ filePath: string; fileName: string }>) => void) => {
     const listener = (_event: Electron.IpcRendererEvent, files: Array<{ filePath: string; fileName: string }>) => callback(files)

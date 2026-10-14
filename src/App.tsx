@@ -3,6 +3,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { TitleBar } from '@/components/TitleBar'
 import { PanelManager } from '@/components/PanelManager'
 import { useAppStore } from '@/store/useAppStore'
+import { anyUnsavedEdits } from '@/store/useEditStore'
 import { selectPdfFiles } from '@/lib/utils'
 import type { SelectedPdfFile } from '@/types'
 
@@ -29,6 +30,17 @@ export default function App() {
     api.getPendingFiles().then(openInActivePanel).catch((err) => console.error('Error getting pending files:', err))
     return unsubscribe
   }, [openFiles])
+
+  // Electron affiche alors une confirmation avant de fermer (voir will-prevent-unload)
+  useEffect(() => {
+    const guard = (e: BeforeUnloadEvent) => {
+      if (!anyUnsavedEdits()) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', guard)
+    return () => window.removeEventListener('beforeunload', guard)
+  }, [])
 
   useEffect(() => {
     const handleKeyDown = async (e: KeyboardEvent) => {

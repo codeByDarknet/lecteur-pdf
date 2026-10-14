@@ -11,8 +11,7 @@ import {
   Columns,
   Rows,
   SplitSquareHorizontal,
-  Highlighter,
-  X,
+  FilePen,
 } from 'lucide-react'
 import { Button } from './ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from './ui/tooltip'
@@ -34,6 +33,8 @@ interface PdfToolbarProps {
   onToggleThumbnails: () => void
   onToggleSearch: () => void
   onSplitPanel: () => void
+  editing: boolean
+  onToggleEdit: () => void
 }
 
 export function PdfToolbar({
@@ -51,6 +52,8 @@ export function PdfToolbar({
   onToggleThumbnails,
   onToggleSearch,
   onSplitPanel,
+  editing,
+  onToggleEdit,
 }: PdfToolbarProps) {
   const [pageInput, setPageInput] = React.useState(String(currentPage))
 
@@ -160,6 +163,16 @@ export function PdfToolbar({
       </Tooltip>
 
       <div className="flex-1" />
+
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onToggleEdit}
+        className={editing ? 'h-7 gap-1.5 px-2.5 text-xs bg-blue-500/15 text-blue-500 hover:bg-blue-500/20 hover:text-blue-500' : 'h-7 gap-1.5 px-2.5 text-xs text-muted-foreground'}
+      >
+        <FilePen className="h-3.5 w-3.5" />
+        Éditer
+      </Button>
 
       {/* Split panel */}
       <Tooltip>
