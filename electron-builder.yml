@@ -51,7 +51,9 @@ linux:
   synopsis: Le lecteur PDF avec onglets et panneaux multiples
   mimeTypes:
     - application/pdf
-  icon: build/icon.png
+  icon: build/icons
+  desktop:
+    StartupWMClass: zackpdf
   artifactName: ZackPDF-Linux-${arch}.${ext}
 deb:
   artifactName: zackpdf_${arch}.${ext}
