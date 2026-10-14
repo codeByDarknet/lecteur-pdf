@@ -4,16 +4,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ZackPDF — lecteur PDF gratuit et open source</title>
-  <meta name="description" content="ZackPDF, le lecteur PDF gratuit et open source pour Windows, macOS et Linux. Onglets, panneaux côte à côte, recherche dans tout le document et reprise de lecture.">
+  <meta name="description" content="ZackPDF, le lecteur PDF gratuit et open source pour Windows, macOS et Linux. Ouvrez plusieurs PDF d'un coup, en onglets et côte à côte, avec la recherche dans tout le document et la reprise de lecture.">
   <meta property="og:title" content="ZackPDF — lecteur PDF gratuit et open source">
-  <meta property="og:description" content="Lisez et comparez vos PDF côte à côte. Gratuit, sans compte, pour Windows, macOS et Linux.">
+  <meta property="og:description" content="Tous vos PDF, une seule fenêtre. Gratuit, sans compte, pour Windows, macOS et Linux.">
   <meta property="og:image" content="https://codebydarknet.github.io/zackpdf/assets/capture-sombre.png">
   <meta property="og:type" content="website">
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --navy: #162041;
@@ -30,6 +30,17 @@
       --shadow: 6px 6px 0 var(--navy);
       --radius: 18px;
       --max: 1120px;
+
+      /* Scène de démonstration */
+      --desk: #C9CEFF;
+      --desk-dot: rgba(22, 32, 65, .12);
+      --win: #FFFFFF;
+      --win-bar: #F4F1EA;
+      --win-line: #E4E0D6;
+      --win-text: #162041;
+      --win-muted: #6b7493;
+      --app-view: #ECEAF4;
+      --page-line: #DCDEEA;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -40,6 +51,15 @@
         --border: #F4F2EC;
         --soft-border: #2a3463;
         --shadow: 6px 6px 0 #000;
+
+        --desk: #1B2450;
+        --desk-dot: rgba(185, 190, 255, .12);
+        --win: #1E2750;
+        --win-bar: #252F5E;
+        --win-line: #323d72;
+        --win-text: #F4F2EC;
+        --win-muted: #a3abcf;
+        --app-view: #121937;
       }
     }
     * { box-sizing: border-box; }
@@ -50,23 +70,23 @@
       color: var(--text);
       font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
     }
-    h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, sans-serif; line-height: 1.1; margin: 0; }
+    h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, sans-serif; line-height: 1.05; margin: 0; }
     a { color: inherit; }
     img { max-width: 100%; display: block; }
     .wrap { max-width: var(--max); margin: 0 auto; padding: 0 16px; }
 
     /* Navigation */
-    nav { position: sticky; top: 0; z-index: 10; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--soft-border); }
+    nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--soft-border); }
     nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; }
-    .brand { white-space: nowrap; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; white-space: nowrap; }
     .brand img { width: 36px; height: 36px; }
-    @media (max-width: 420px) { nav .wrap { gap: 12px; } nav .links { gap: 14px; } }
     nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
     nav .links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 15px; }
     nav .links a:hover { color: var(--text); }
     @media (max-width: 640px) { nav .links a.optional { display: none; } }
+    @media (max-width: 420px) { nav .wrap { gap: 12px; } nav .links { gap: 14px; } }
 
     /* Boutons */
     .btn {
@@ -80,44 +100,214 @@
     .btn-ghost { background: var(--surface); color: var(--text); border-color: var(--border); }
     .btn-ghost:hover { background: color-mix(in srgb, var(--lav) 30%, var(--surface)); }
     .btn svg { width: 20px; height: 20px; flex: none; }
-    .btn small { display: block; font-weight: 500; opacity: .85; font-size: 12px; }
+    nav .links a.btn-primary { padding: 8px 16px; font-size: 14px; color: #fff; }
 
     /* Hero */
-    .hero { padding: 72px 0 40px; text-align: center; position: relative; overflow: hidden; }
-    .hero .logo { width: 132px; height: 132px; margin: 0 auto 20px; animation: float 5s ease-in-out infinite; }
-    @keyframes float { 50% { transform: translateY(-8px) rotate(-2deg); } }
-    @media (prefers-reduced-motion: reduce) { .hero .logo { animation: none; } }
-    .pill { display: inline-block; padding: 4px 14px; border-radius: 999px; background: var(--yellow); color: var(--navy); font-weight: 600; font-size: 13px; border: 2px solid var(--navy); margin-bottom: 18px; }
-    .hero h1 { font-size: clamp(40px, 7vw, 76px); font-weight: 800; letter-spacing: -1.5px; }
-    .hero h1 mark { background: linear-gradient(transparent 58%, var(--yellow) 58%, var(--yellow) 92%, transparent 92%); color: inherit; padding: 0 4px; }
-    .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 640px; margin: 18px auto 32px; }
+    .hero { padding: 64px 0 24px; text-align: center; position: relative; }
+    .pill { display: inline-block; padding: 4px 14px; border-radius: 999px; background: var(--yellow); color: var(--navy); font-weight: 600; font-size: 13px; border: 2px solid var(--navy); margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(42px, 7.4vw, 84px); font-weight: 800; letter-spacing: -2px; }
+    .hero h1 mark { background: linear-gradient(transparent 58%, var(--yellow) 58%, var(--yellow) 92%, transparent 92%); color: inherit; padding: 0 6px; }
+    .hero h1 .coral { color: var(--coral); }
+    .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 680px; margin: 20px auto 32px; }
     .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
     .version { margin-top: 14px; color: var(--muted); font-size: 14px; }
 
-    .shot { margin: 56px auto 0; max-width: 1040px; border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden; box-shadow: 10px 10px 0 var(--navy); background: var(--navy); }
-    .shot img { width: 100%; height: auto; }
-    .shot .light { display: none; }
-    @media (prefers-color-scheme: light) { .shot .dark { display: none; } .shot .light { display: block; } }
+    /* Scène animée */
+    .demo { position: relative; max-width: 1000px; margin: 56px auto 0; }
+    .stage-box {
+      position: relative; width: 100%; aspect-ratio: 1000 / 600;
+      border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden;
+      box-shadow: 10px 10px 0 var(--navy); background: var(--desk);
+    }
+    @media (prefers-color-scheme: dark) { .stage-box { box-shadow: 10px 10px 0 #000; } }
+    .stage {
+      position: absolute; left: 0; top: 0; width: 1000px; height: 600px;
+      transform-origin: 0 0; transform: scale(var(--s, 1));
+      background: radial-gradient(var(--desk-dot) 1.5px, transparent 1.6px) 0 0 / 22px 22px;
+      font: 13px/1.35 Inter, system-ui, sans-serif; color: var(--win-text); text-align: left;
+      user-select: none; pointer-events: none;
+    }
+    .layer { position: absolute; inset: 0; }
+
+    .sticker {
+      position: absolute; z-index: 3; top: -26px; right: -18px; width: 104px; height: 104px;
+      border-radius: 50%; background: var(--yellow); color: var(--navy); border: 3px solid var(--navy);
+      display: grid; place-items: center; text-align: center; font: 800 17px/1.05 "Bricolage Grotesque", sans-serif;
+      transform: rotate(12deg); box-shadow: 4px 4px 0 var(--navy);
+    }
+    @media (max-width: 640px) {
+      .sticker { width: 62px; height: 62px; font-size: 11px; top: -38px; right: -4px; border-width: 2.5px; box-shadow: 3px 3px 0 var(--navy); }
+      .steps li { font-size: 14px; }
+    }
+    .blob { position: absolute; z-index: -1; border: 3px solid var(--navy); }
+    .blob.b1 { width: 160px; height: 160px; border-radius: 50%; background: var(--coral); left: -54px; top: 38%; }
+    .blob.b2 { width: 120px; height: 120px; border-radius: 24px; background: var(--lav); right: -46px; bottom: 40px; transform: rotate(14deg); }
+    @media (max-width: 1100px) { .blob { display: none; } }
+
+    .win { position: absolute; background: var(--win); border: 2.5px solid var(--navy); border-radius: 12px; overflow: hidden; box-shadow: 6px 6px 0 rgba(22, 32, 65, .9); }
+    .win-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 12px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); font-weight: 600; }
+    .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--navy); }
+    .win-bar i:nth-child(1) { background: var(--coral); } .win-bar i:nth-child(2) { background: var(--yellow); } .win-bar i:nth-child(3) { background: #7fd49b; }
+    .win-bar span { margin-left: 10px; }
+
+    /* Explorateur de fichiers */
+    .ex { left: 46px; top: 44px; width: 560px; height: 430px; display: flex; flex-direction: column; }
+    .ex-body { flex: 1; display: flex; min-height: 0; }
+    .ex aside { width: 132px; padding: 12px 8px; border-right: 2px solid var(--win-line); display: flex; flex-direction: column; gap: 2px; }
+    .ex aside p { margin: 0 8px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--win-muted); font-weight: 600; }
+    .ex aside a { padding: 5px 8px; border-radius: 7px; color: var(--win-muted); }
+    .ex aside a.on { background: color-mix(in srgb, var(--lav) 40%, transparent); color: var(--win-text); font-weight: 600; }
+    .grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 150px; gap: 8px; padding: 18px; align-content: start; }
+    .tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; border: 2px solid transparent; transition: background .15s, border-color .15s; }
+    .tile span { font-size: 12.5px; text-align: center; padding: 1px 6px; border-radius: 5px; }
+    .tile.sel { background: color-mix(in srgb, var(--lav) 42%, transparent); border-color: var(--lav-dark); }
+    .tile.sel span { background: var(--lav-dark); color: #fff; }
+    .ex-status { height: 30px; border-top: 2px solid var(--win-line); display: flex; align-items: center; padding: 0 14px; font-size: 12px; color: var(--win-muted); background: var(--win-bar); }
+    .ex-status b { color: var(--win-text); }
+
+    .doc-ico {
+      position: relative; width: 54px; height: 68px; flex: none;
+      background: #FBFBFC repeating-linear-gradient(#FBFBFC 0 16px, #D9D9DE 16px 19px, #FBFBFC 19px 25px) 9px 0 / 30px 100% no-repeat;
+      border: 2.5px solid var(--navy); border-radius: 5px 16px 5px 5px;
+    }
+    .doc-ico b {
+      position: absolute; left: -8px; bottom: 9px; padding: 1px 6px; border-radius: 5px; border: 2px solid var(--navy);
+      font: 800 10.5px/1.3 Inter, sans-serif; color: #fff; background: var(--coral); letter-spacing: .3px;
+    }
+    .doc-ico.jpg b { background: var(--yellow); color: var(--navy); }
+    .doc-ico.txt b { background: var(--lav); color: var(--navy); }
+    .doc-ico.xls b { background: #4caf7a; }
+
+    /* Menu contextuel */
+    .ctx { position: absolute; z-index: 6; width: 196px; padding: 6px; background: var(--win); border: 2.5px solid var(--navy); border-radius: 11px; box-shadow: 5px 5px 0 rgba(22, 32, 65, .9); display: none; }
+    .ctx.open { display: block; animation: pop .14s ease-out; }
+    .ci { position: relative; padding: 6px 10px; border-radius: 7px; display: flex; align-items: center; gap: 9px; white-space: nowrap; }
+    .ci > span { margin-left: auto; font-weight: 700; color: var(--win-muted); }
+    .ci.hover { background: var(--lav-dark); color: #fff; }
+    .ci.hover > span { color: #fff; }
+    .ci.danger { color: #d24a35; }
+    .ci img { width: 20px; height: 20px; }
+    .sep { height: 2px; background: var(--win-line); margin: 5px 4px; }
+    .sub { position: absolute; left: calc(100% + 4px); top: -8px; width: 214px; padding: 6px; background: var(--win); color: var(--win-text); border: 2.5px solid var(--navy); border-radius: 11px; box-shadow: 5px 5px 0 rgba(22, 32, 65, .9); display: none; }
+    .sub.open { display: block; animation: pop .14s ease-out; }
+    .ci.zi { font-weight: 700; }
+    .ci.zi em { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 5px; background: var(--yellow); color: var(--navy); }
+    @keyframes pop { from { opacity: 0; transform: scale(.94); } }
+
+    /* Dock */
+    .dock {
+      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 12px; align-items: flex-end;
+      padding: 8px 12px; background: color-mix(in srgb, var(--win) 75%, transparent); border: 2.5px solid var(--navy); border-radius: 16px;
+    }
+    .di { position: relative; width: 40px; height: 40px; border-radius: 11px; border: 2px solid var(--navy); display: grid; place-items: center; }
+    .di svg { width: 22px; height: 22px; color: var(--navy); }
+    .di.z { background: #fff; padding: 3px; }
+    .di.z img { width: 100%; height: 100%; }
+    .di.z::after { content: ""; position: absolute; bottom: -8px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--navy); opacity: 0; transition: opacity .2s; }
+    .di.z.running::after { opacity: 1; }
+    @media (prefers-color-scheme: dark) { .di.z::after { background: #F4F2EC; } }
+
+    /* Fenêtre ZackPDF */
+    .zw { left: 118px; top: 22px; width: 820px; height: 500px; display: flex; flex-direction: column; opacity: 0; z-index: 5; }
+    .zw-bar { height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 12px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); font-weight: 700; }
+    .zw-bar img { width: 22px; height: 22px; }
+    .zw-bar .ctl { margin-left: auto; display: flex; gap: 16px; color: var(--win-muted); font-weight: 600; }
+    .zw-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 0fr; transition: grid-template-columns .55s cubic-bezier(.3, .9, .3, 1); }
+    .zw-body.split { grid-template-columns: 1fr 1fr; }
+    .pane { min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .pane + .pane { border-left: 2px solid var(--win-line); }
+    .tabs { height: 36px; flex: none; display: flex; align-items: flex-end; gap: 4px; padding: 0 8px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); overflow: hidden; }
+    .tab { height: 29px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 8px 8px 0 0; font-size: 12px; color: var(--win-muted); white-space: nowrap; flex: none; }
+    .tab::before { content: ""; width: 9px; height: 11px; border: 1.5px solid currentColor; border-radius: 2px 4px 2px 2px; flex: none; }
+    .tab::after { content: "×"; font-size: 14px; opacity: .55; }
+    .tab.on { background: var(--win); color: var(--win-text); font-weight: 600; box-shadow: inset 0 3px 0 var(--coral); }
+    .tab.new { animation: tabIn .32s cubic-bezier(.3, 1.4, .5, 1); }
+    .tab.lifted { opacity: .3; }
+    @keyframes tabIn { from { opacity: 0; transform: translateY(12px) scale(.9); } }
+    .tools { height: 34px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-bottom: 2px solid var(--win-line); color: var(--win-muted); font-size: 12px; white-space: nowrap; }
+    .tools .grow { flex: 1; }
+    .tb { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; flex: none; transition: background .15s; }
+    .tb svg { width: 15px; height: 15px; }
+    .tb.hot { background: color-mix(in srgb, var(--lav) 55%, transparent); color: var(--win-text); }
+    .view { flex: 1; min-height: 0; background: var(--app-view); display: flex; justify-content: center; padding-top: 18px; overflow: hidden; }
+
+    /* Pages dessinées */
+    .page { width: 258px; height: 360px; flex: none; background: #fff; color: #162041; border-radius: 3px; box-shadow: 0 2px 0 rgba(0, 0, 0, .08), 0 8px 24px rgba(22, 32, 65, .18); padding: 22px; }
+    .page.in { animation: pageIn .35s ease-out; }
+    @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } }
+    .page h4 { margin: 0; font: 800 17px/1.15 "Bricolage Grotesque", sans-serif; }
+    .page .sub-t { margin: 3px 0 14px; font-size: 10.5px; color: #6b7493; }
+    .ln { height: 6px; border-radius: 3px; background: var(--page-line); margin: 8px 0; }
+    .ln.w9 { width: 90%; } .ln.w7 { width: 70%; } .ln.w5 { width: 50%; }
+    .ln.mark { background: var(--yellow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--yellow) 45%, transparent); }
+    .bars { display: flex; align-items: flex-end; gap: 9px; height: 104px; padding: 0 4px; border-bottom: 2px solid #162041; margin-bottom: 14px; }
+    .bars i { flex: 1; border: 2px solid #162041; border-bottom: 0; border-radius: 4px 4px 0 0; }
+    .kpis { display: flex; gap: 8px; margin-bottom: 12px; }
+    .kpis div { flex: 1; border: 2px solid #162041; border-radius: 7px; padding: 5px 7px; font: 800 15px/1.1 "Bricolage Grotesque", sans-serif; }
+    .kpis small { display: block; font: 500 9px/1.2 Inter, sans-serif; color: #6b7493; }
+    .sign { display: flex; gap: 12px; margin-top: 18px; }
+    .sign div { flex: 1; height: 58px; border: 2px dashed #b4b8cc; border-radius: 7px; display: grid; place-items: center; }
+    .sign svg { width: 80%; height: 34px; }
+    .formula { font: italic 600 15px/1 Georgia, serif; padding: 8px 10px; background: #F8E5E1; border-radius: 7px; margin-bottom: 10px; text-align: center; }
+    .curve { width: 100%; height: 118px; display: block; margin-bottom: 8px; }
+
+    /* Curseur */
+    .cursor { position: absolute; left: 0; top: 0; z-index: 9; width: 0; height: 0; opacity: 0; transition: opacity .25s; }
+    .cursor .arrow { position: absolute; left: -3px; top: -2px; width: 26px; height: 32px; transform-origin: 3px 2px; filter: drop-shadow(2px 3px 0 rgba(22, 32, 65, .35)); }
+    .cursor .key { position: absolute; left: 22px; top: 26px; padding: 2px 7px; border-radius: 6px; border: 2px solid var(--navy); background: var(--yellow); color: var(--navy); font: 700 11px/1.2 Inter, sans-serif; box-shadow: 2px 2px 0 var(--navy); opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
+    .cursor .key.on { opacity: 1; transform: none; }
+    .cursor .ghost { position: absolute; left: 10px; top: 14px; box-shadow: 4px 4px 0 rgba(22, 32, 65, .5); border: 2px solid var(--navy); border-radius: 8px; background: var(--win); color: var(--win-text); transform: rotate(-4deg); }
+    .ripple { position: absolute; z-index: 8; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--coral); }
+    .ripple.right { border-color: var(--lav-dark); }
+    .fly { position: absolute; z-index: 7; }
+
+    /* Étapes sous la scène */
+    .steps { list-style: none; padding: 0; margin: 28px auto 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .steps li { display: flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border-radius: 999px; border: 2px solid var(--soft-border); color: var(--muted); font-weight: 600; font-size: 15px; transition: all .25s; }
+    .steps li b { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--soft-border); color: var(--text); font-size: 13px; transition: all .25s; }
+    .steps li.on { border-color: var(--navy); color: var(--text); background: var(--surface); box-shadow: 3px 3px 0 var(--navy); }
+    .steps li.on b { background: var(--coral); color: #fff; }
+    @media (prefers-color-scheme: dark) { .steps li.on { border-color: var(--border); box-shadow: 3px 3px 0 #000; } }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    /* Bandeau défilant */
+    .ticker { margin: 72px 0 0; background: var(--coral); border-block: 3px solid var(--navy); transform: rotate(-1.6deg); overflow: hidden; }
+    .ticker-track { display: flex; width: max-content; animation: tick 32s linear infinite; }
+    .ticker span { padding: 14px 0; font: 800 24px/1 "Bricolage Grotesque", sans-serif; color: #fff; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    .ticker span::after { content: "✦"; color: var(--yellow); margin: 0 28px; }
+    @keyframes tick { to { transform: translateX(-50%); } }
 
     /* Sections */
-    section { padding: 80px 0; }
+    section { padding: 88px 0; }
     .section-title { text-align: center; margin-bottom: 48px; }
-    .section-title h2 { font-size: clamp(32px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1px; }
+    .section-title h2 { font-size: clamp(32px, 4.8vw, 52px); font-weight: 800; letter-spacing: -1px; }
     .section-title p { color: var(--muted); max-width: 600px; margin: 12px auto 0; font-size: 18px; }
 
     .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 22px; }
-    .feature { background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); }
+    .feature { background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .18s ease; }
+    .feature:hover { transform: translate(-3px, -3px) rotate(-.4deg); box-shadow: 9px 9px 0 var(--navy); }
+    @media (prefers-color-scheme: dark) { .feature:hover { box-shadow: 9px 9px 0 #000; } }
     .feature .icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; border: 2.5px solid var(--navy); margin-bottom: 18px; color: var(--navy); }
     .feature .icon svg { width: 26px; height: 26px; }
     .feature h3 { font-size: 22px; margin-bottom: 8px; }
     .feature p { margin: 0; color: var(--muted); }
     .c-coral { background: var(--coral); } .c-yellow { background: var(--yellow); } .c-lav { background: var(--lav); }
 
+    /* Vraie application */
+    .real { display: flex; flex-direction: column; align-items: center; }
+    .switch { display: inline-flex; padding: 4px; border: 2.5px solid var(--border); border-radius: 999px; background: var(--surface); margin-bottom: 28px; }
+    .switch button { border: 0; background: none; color: var(--muted); font: 600 15px Inter, sans-serif; padding: 8px 18px; border-radius: 999px; cursor: pointer; }
+    .switch button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+    @media (prefers-color-scheme: dark) { .switch button[aria-pressed="true"] { background: var(--yellow); color: var(--navy); } }
+    .shot { width: 100%; max-width: 1040px; border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden; box-shadow: 10px 10px 0 var(--navy); background: var(--navy); }
+    .shot img { width: 100%; height: auto; }
+    .shot img[hidden] { display: none; }
+
     /* Raccourcis */
     .shortcuts { max-width: 640px; margin: 0 auto; background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
     .shortcuts div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 22px; border-top: 1px solid var(--soft-border); }
     .shortcuts div:first-child { border-top: 0; }
-    kbd { font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 6px 9px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); white-space: nowrap; }
+    kbd { font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 6px 9px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); white-space: nowrap; box-shadow: 0 2px 0 var(--border); }
 
     /* Téléchargements */
     #telecharger { background: var(--navy); color: #F4F2EC; }
@@ -143,7 +333,7 @@
     /* Open source */
     .oss { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
     @media (max-width: 820px) { .oss { grid-template-columns: 1fr; } }
-    .oss h2 { font-size: clamp(32px, 4.5vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .oss h2 { font-size: clamp(32px, 4.8vw, 52px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
     .oss p { color: var(--muted); font-size: 18px; }
     .terminal { background: #0b0f22; color: #e8e8f0; border: 3px solid var(--navy); border-radius: var(--radius); padding: 22px; font: 14px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
     .terminal .p { color: var(--coral); user-select: none; }
@@ -158,9 +348,20 @@
     details[open] summary::after { content: "−"; }
     details p { margin: 0 0 16px; color: var(--muted); }
 
+    /* Appel final */
+    .final { text-align: center; }
+    .final img { width: 96px; height: 96px; margin: 0 auto 18px; animation: float 5s ease-in-out infinite; }
+    .final h2 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 26px; }
+    @keyframes float { 50% { transform: translateY(-8px) rotate(-3deg); } }
+
     footer { border-top: 1px solid var(--soft-border); padding: 36px 0; color: var(--muted); font-size: 14px; }
     footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
     footer a { color: var(--muted); }
+
+    @media (prefers-reduced-motion: reduce) {
+      .ticker-track, .final img { animation: none; }
+      .feature, .btn { transition: none; }
+    }
   </style>
 </head>
 <body>
@@ -171,17 +372,16 @@
         <a class="optional" href="#fonctionnalites">Fonctionnalités</a>
         <a class="optional" href="#faq">FAQ</a>
         <a href="https://github.com/codeByDarknet/zackpdf">GitHub</a>
-        <a class="btn btn-primary" style="padding:8px 16px;font-size:14px" href="#telecharger">Télécharger</a>
+        <a class="btn btn-primary" href="#telecharger">Télécharger</a>
       </div>
     </div>
   </nav>
 
   <header class="hero">
     <div class="wrap">
-      <img class="logo" src="assets/logo.svg" alt="Logo de ZackPDF">
       <span class="pill">Gratuit · Open source · Sans compte</span>
-      <h1>Lisez vos PDF,<br><mark>côte à côte</mark>.</h1>
-      <p class="lead">Un lecteur PDF rapide et léger, avec des onglets, des panneaux multiples et la recherche dans tout le document. Pour Windows, macOS et Linux.</p>
+      <h1>Tous vos PDF.<br><mark>Une seule fenêtre<span class="coral">.</span></mark></h1>
+      <p class="lead">Sélectionnez plusieurs documents, faites « Ouvrir avec ZackPDF » : ils s'ouvrent en onglets, prêts à être lus et comparés côte à côte. Pour Windows, macOS et Linux.</p>
       <div class="cta">
         <a class="btn btn-primary" id="main-download" href="#telecharger">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
@@ -194,12 +394,83 @@
       </div>
       <p class="version" id="version">Windows · macOS · Linux</p>
 
-      <div class="shot">
-        <img class="dark" src="assets/capture-sombre.png" width="1920" height="1080" alt="ZackPDF en thème sombre : deux documents affichés côte à côte avec les miniatures">
-        <img class="light" src="assets/capture-clair.png" width="1920" height="1080" alt="ZackPDF en thème clair : recherche d'un mot surligné dans le document">
-      </div>
+      <figure class="demo">
+        <span class="blob b1"></span><span class="blob b2"></span>
+        <div class="sticker">100 %<br>gratuit</div>
+        <div class="stage-box" id="stage-box" aria-hidden="true">
+          <div class="stage" id="stage">
+            <div class="layer" id="layer">
+              <div class="win ex" id="explorer">
+                <div class="win-bar"><i></i><i></i><i></i><span>Documents</span></div>
+                <div class="ex-body">
+                  <aside><p>Favoris</p><a>Bureau</a><a class="on">Documents</a><a>Téléchargements</a><a>Images</a><a>Musique</a></aside>
+                  <div class="grid">
+                    <div class="tile" data-doc="rapport"><div class="doc-ico"><b>PDF</b></div><span>Rapport-2026.pdf</span></div>
+                    <div class="tile"><div class="doc-ico jpg"><b>JPG</b></div><span>Vacances.jpg</span></div>
+                    <div class="tile" data-doc="contrat"><div class="doc-ico"><b>PDF</b></div><span>Contrat-v2.pdf</span></div>
+                    <div class="tile"><div class="doc-ico txt"><b>TXT</b></div><span>Notes.txt</span></div>
+                    <div class="tile" data-doc="cours"><div class="doc-ico"><b>PDF</b></div><span>Cours-maths.pdf</span></div>
+                    <div class="tile"><div class="doc-ico xls"><b>XLS</b></div><span>Budget.xlsx</span></div>
+                  </div>
+                </div>
+                <div class="ex-status" id="ex-status">6 éléments</div>
+              </div>
+
+              <div class="ctx" id="ctx">
+                <div class="ci">Ouvrir</div>
+                <div class="ci" id="ci-with">Ouvrir avec <span>›</span>
+                  <div class="sub" id="sub">
+                    <div class="ci zi" id="ci-zack"><img src="assets/logo.svg" alt="">ZackPDF <em>conseillé</em></div>
+                    <div class="ci">Visionneuse de documents</div>
+                    <div class="ci">Navigateur web</div>
+                    <div class="sep"></div>
+                    <div class="ci">Autre application…</div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="ci">Copier</div>
+                <div class="ci">Renommer</div>
+                <div class="ci">Compresser</div>
+                <div class="sep"></div>
+                <div class="ci danger">Supprimer</div>
+              </div>
+
+              <div class="win zw" id="zw">
+                <div class="zw-bar"><img src="assets/logo.svg" alt="">ZackPDF<span class="ctl"><span>—</span><span>▢</span><span>✕</span></span></div>
+                <div class="zw-body" id="zw-body"><div class="pane" id="p1"></div><div class="pane" id="p2"></div></div>
+              </div>
+            </div>
+
+            <div class="dock">
+              <span class="di" style="background:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 6h6l2 2h10v11H3z"/></svg></span>
+              <span class="di" style="background:var(--lav)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 2.5 14.4 0 17M12 3.5c-2.5 2.6-2.5 14.4 0 17"/></svg></span>
+              <span class="di z" id="dock-z"><img src="assets/logo.svg" alt=""></span>
+              <span class="di" style="background:var(--coral)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
+              <span class="di" style="background:#7fd49b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>
+            </div>
+
+            <div class="cursor" id="cursor">
+              <svg class="arrow" viewBox="0 0 26 32"><path d="M3 2v24l6.5-6 4.2 9.4 4.4-2-4.1-9.2H23z" fill="#fff" stroke="#162041" stroke-width="2.4" stroke-linejoin="round"/></svg>
+              <span class="key" id="key">Ctrl</span>
+            </div>
+          </div>
+        </div>
+        <figcaption class="sr">Animation : trois PDF sont sélectionnés dans l'explorateur de fichiers, puis ouverts avec ZackPDF. Ils apparaissent en onglets, et deux d'entre eux sont affichés côte à côte.</figcaption>
+        <ol class="steps" id="steps">
+          <li data-step="1"><b>1</b>Sélectionnez vos PDF</li>
+          <li data-step="2"><b>2</b>Ouvrir avec ZackPDF</li>
+          <li data-step="3"><b>3</b>Lisez-les côte à côte</li>
+        </ol>
+      </figure>
     </div>
   </header>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>Gratuit</span><span>Open source</span><span>Sans compte</span><span>Hors ligne</span><span>Onglets</span><span>Côte à côte</span><span>Windows</span><span>macOS</span><span>Linux</span>
+      <span>Gratuit</span><span>Open source</span><span>Sans compte</span><span>Hors ligne</span><span>Onglets</span><span>Côte à côte</span><span>Windows</span><span>macOS</span><span>Linux</span>
+    </div>
+  </div>
 
   <section id="fonctionnalites">
     <div class="wrap">
@@ -216,7 +487,7 @@
         <article class="feature">
           <div class="icon c-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18"/><path d="M3 5h6l2 4"/><rect x="3" y="5" width="18" height="15" rx="2"/></svg></div>
           <h3>Onglets</h3>
-          <p>Ouvrez autant de PDF que vous voulez. Glissez un onglet d'un panneau à l'autre pour réorganiser votre espace.</p>
+          <p>Ouvrez autant de PDF que vous voulez, d'un seul coup. Glissez un onglet d'un panneau à l'autre pour réorganiser votre espace.</p>
         </article>
         <article class="feature">
           <div class="icon c-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
@@ -238,6 +509,23 @@
           <h3>Thème clair ou sombre</h3>
           <p>Un thème sombre reposant pour lire le soir, un thème clair pour la journée. Et un double-clic sur un PDF suffit à l'ouvrir.</p>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap real">
+      <div class="section-title">
+        <h2>La vraie application</h2>
+        <p>Pas de maquette ici : voici ZackPDF tel que vous l'installerez.</p>
+      </div>
+      <div class="switch" role="group" aria-label="Thème de la capture">
+        <button type="button" data-theme="dark" aria-pressed="true">Thème sombre</button>
+        <button type="button" data-theme="light" aria-pressed="false">Thème clair</button>
+      </div>
+      <div class="shot">
+        <img data-theme="dark" src="assets/capture-sombre.png" width="1920" height="1080" loading="lazy" alt="ZackPDF en thème sombre : deux documents affichés côte à côte avec les miniatures">
+        <img data-theme="light" src="assets/capture-clair.png" width="1920" height="1080" loading="lazy" alt="ZackPDF en thème clair : recherche d'un mot surligné dans le document" hidden>
       </div>
     </div>
   </section>
@@ -357,6 +645,10 @@
           <p>Non. Les PDF sont lus directement depuis votre disque. L'application fonctionne entièrement hors ligne et n'envoie aucune donnée.</p>
         </details>
         <details>
+          <summary>Comment ouvrir plusieurs PDF d'un coup ?</summary>
+          <p>Sélectionnez-les dans votre explorateur de fichiers (Ctrl + clic, ou Cmd + clic sur Mac), puis clic droit → <b>Ouvrir avec</b> → <b>ZackPDF</b>. Chaque document s'ouvre dans son propre onglet. Si ZackPDF est déjà ouvert, ils rejoignent la fenêtre existante.</p>
+        </details>
+        <details>
           <summary>Comment en faire mon lecteur PDF par défaut ?</summary>
           <p>Après l'installation, faites un clic droit sur un PDF → <b>Ouvrir avec</b> → <b>ZackPDF</b>, et cochez l'option pour toujours l'utiliser. Sous Windows, passez par <b>Paramètres → Applications → Applications par défaut</b>.</p>
         </details>
@@ -369,6 +661,17 @@
           <p>Téléchargez la nouvelle version depuis cette page et installez-la par-dessus l'ancienne. Vos onglets et votre session sont conservés.</p>
         </details>
       </div>
+    </div>
+  </section>
+
+  <section class="final" style="padding-top:0">
+    <div class="wrap">
+      <img src="assets/logo.svg" alt="">
+      <h2>Prêt à ranger vos PDF ?</h2>
+      <a class="btn btn-primary" href="#telecharger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+        Télécharger ZackPDF
+      </a>
     </div>
   </section>
 
@@ -409,6 +712,268 @@
         }
       })
       .catch(() => {})
+
+    // Captures : thème sombre ou clair
+    const themeButtons = document.querySelectorAll('.switch button')
+    const showShot = (theme) => {
+      themeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.theme === theme)))
+      document.querySelectorAll('.shot img').forEach((img) => { img.hidden = img.dataset.theme !== theme })
+    }
+    themeButtons.forEach((b) => b.addEventListener('click', () => showShot(b.dataset.theme)))
+    if (matchMedia('(prefers-color-scheme: light)').matches) showShot('light')
+  </script>
+
+  <script>
+    // Scène animée : sélection de plusieurs PDF, « Ouvrir avec ZackPDF », onglets et panneaux
+    ;(() => {
+      const $ = (s, r = document) => r.querySelector(s)
+      const box = $('#stage-box'), stage = $('#stage'), layer = $('#layer')
+      const cursor = $('#cursor'), arrow = $('.arrow', cursor), key = $('#key')
+      const ctx = $('#ctx'), withItem = $('#ci-with'), sub = $('#sub'), zackItem = $('#ci-zack')
+      const zw = $('#zw'), body = $('#zw-body'), dockZ = $('#dock-z'), status = $('#ex-status')
+      const tiles = [...stage.querySelectorAll('.tile[data-doc]')]
+      const steps = [...document.querySelectorAll('#steps li')]
+
+      const lines = (n, marked = -1) => Array.from({ length: n }, (_, i) => `<div class="ln ${['', 'w9', '', 'w7', 'w9', 'w5'][i % 6]}${i === marked ? ' mark' : ''}"></div>`).join('')
+      const DOCS = {
+        rapport: {
+          name: 'Rapport-2026.pdf', pages: 24,
+          html: `<h4>Rapport annuel 2026</h4><p class="sub-t">Synthèse des résultats</p>
+            <div class="kpis"><div>+38 %<small>Croissance</small></div><div>1 240<small>Clients</small></div></div>
+            <div class="bars"><i style="height:38%;background:#B9BEFF"></i><i style="height:55%;background:#B9BEFF"></i><i style="height:47%;background:#F3CC4B"></i><i style="height:70%;background:#F3CC4B"></i><i style="height:82%;background:#FF6C51"></i><i style="height:96%;background:#FF6C51"></i></div>
+            ${lines(4)}`,
+        },
+        contrat: {
+          name: 'Contrat-v2.pdf', pages: 9,
+          html: `<h4>Contrat de service</h4><p class="sub-t">Version 2 · Articles 1 à 9</p>${lines(11, 4)}
+            <div class="sign"><div><svg viewBox="0 0 100 34"><path d="M6 24c8-16 14-18 12-6s8-14 14-8-4 14 6 8 10-10 16-4 14 2 22-2" fill="none" stroke="#566CC3" stroke-width="2.5" stroke-linecap="round"/></svg></div><div><svg viewBox="0 0 100 34"><path d="M8 20c6-10 16-12 14 0s10-10 18-6 6 8 16 2 12-12 18-4 10 6 18 0" fill="none" stroke="#162041" stroke-width="2.5" stroke-linecap="round"/></svg></div></div>`,
+        },
+        cours: {
+          name: 'Cours-maths.pdf', pages: 16,
+          html: `<h4>Cours de maths</h4><p class="sub-t">Chapitre 4 · Fonctions du second degré</p>
+            <div class="formula">f(x) = ax² + bx + c</div>
+            <svg class="curve" viewBox="0 0 214 118"><path d="M10 104h194M107 6v108" stroke="#b4b8cc" stroke-width="2"/><path d="M30 14Q107 196 184 14" fill="none" stroke="#FF6C51" stroke-width="3.5" stroke-linecap="round"/><circle cx="107" cy="105" r="5" fill="#F3CC4B" stroke="#162041" stroke-width="2"/></svg>
+            ${lines(4)}`,
+        },
+      }
+
+      // Panneaux de la fenêtre ZackPDF
+      const makePane = (el) => {
+        el.innerHTML = `<div class="tabs"></div>
+          <div class="tools"><span class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></span>
+          <span class="pg-n"></span><span class="grow"></span><span>−</span><span>100 %</span><span>+</span>
+          <span class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
+          <span class="tb split-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></span></div>
+          <div class="view"></div>`
+        return { el, tabs: $('.tabs', el), view: $('.view', el), num: $('.pg-n', el), split: $('.split-btn', el) }
+      }
+      let p1, p2
+      const tabOf = (pane, doc) => pane.tabs.querySelector(`[data-doc="${doc}"]`)
+      const activate = (pane, doc, animate = true) => {
+        pane.tabs.querySelectorAll('.tab').forEach((t) => t.classList.toggle('on', t.dataset.doc === doc))
+        pane.view.innerHTML = `<div class="page${animate ? ' in' : ''}">${DOCS[doc].html}</div>`
+        pane.num.textContent = `1 / ${DOCS[doc].pages}`
+      }
+      const addTab = (pane, doc, animate = true) => {
+        const t = document.createElement('div')
+        t.className = 'tab' + (animate ? ' new' : '')
+        t.dataset.doc = doc
+        t.textContent = DOCS[doc].name
+        pane.tabs.append(t)
+        activate(pane, doc, animate)
+      }
+
+      // Échelle de la scène (dessinée en 1000 × 600)
+      let scale = 1
+      const fit = () => { scale = box.clientWidth / 1000; stage.style.setProperty('--s', scale) }
+      new ResizeObserver(fit).observe(box)
+      fit()
+      const pt = (el, ax = 0.5, ay = 0.5) => {
+        const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect()
+        return { x: (r.left - s.left + r.width * ax) / scale, y: (r.top - s.top + r.height * ay) / scale }
+      }
+
+      // Pause quand la scène n'est pas visible
+      let inView = false, waiting = null
+      const isActive = () => inView && !document.hidden
+      const refresh = () => { if (isActive() && waiting) { waiting(); waiting = null } }
+      new IntersectionObserver(([e]) => { inView = e.isIntersecting; refresh() }, { threshold: 0.25 }).observe(box)
+      document.addEventListener('visibilitychange', refresh)
+      const gate = () => (isActive() ? Promise.resolve() : new Promise((r) => { waiting = r }))
+      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
+      const wait = async (ms) => { await gate(); await sleep(ms) }
+
+      // Curseur
+      let cx = 1040, cy = 640
+      const place = (x, y) => { cx = x; cy = y; cursor.style.transform = `translate(${x}px, ${y}px)` }
+      const move = async (to, dur = 700) => {
+        await gate()
+        const anim = cursor.animate([{ transform: `translate(${cx}px, ${cy}px)` }, { transform: `translate(${to.x}px, ${to.y}px)` }], { duration: dur, easing: 'cubic-bezier(.55, 0, .3, 1)' })
+        place(to.x, to.y)
+        await anim.finished
+      }
+      const press = (down) => arrow.animate([{ transform: `scale(${down ? 1 : .82})` }, { transform: `scale(${down ? .82 : 1})` }], { duration: 120, fill: 'forwards' })
+      const click = async (right = false) => {
+        await gate()
+        const r = document.createElement('span')
+        r.className = 'ripple' + (right ? ' right' : '')
+        r.style.left = cx - 18 + 'px'
+        r.style.top = cy - 18 + 'px'
+        stage.append(r)
+        r.animate([{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 480, easing: 'ease-out' }).finished.then(() => r.remove())
+        press(true)
+        await sleep(110)
+        press(false)
+        await sleep(110)
+      }
+      const setStep = (n) => steps.forEach((li) => li.classList.toggle('on', +li.dataset.step === n))
+      const select = (tile) => {
+        tile.classList.add('sel')
+        const n = stage.querySelectorAll('.tile.sel').length
+        status.innerHTML = `<b>${n} élément${n > 1 ? 's' : ''} sélectionné${n > 1 ? 's' : ''}</b>&nbsp;· 6 éléments`
+      }
+
+      const reset = () => {
+        layer.getAnimations().forEach((a) => a.cancel())
+        stage.querySelectorAll('.tile').forEach((t) => t.classList.remove('sel'))
+        status.textContent = '6 éléments'
+        ctx.classList.remove('open'); sub.classList.remove('open')
+        ctx.querySelectorAll('.hover').forEach((e) => e.classList.remove('hover'))
+        zw.style.opacity = 0
+        dockZ.classList.remove('running')
+        body.classList.remove('split')
+        p1 = makePane($('#p1')); p2 = makePane($('#p2'))
+        key.classList.remove('on')
+        cursor.style.opacity = 0
+        place(1040, 640)
+        setStep(0)
+      }
+
+      // Lancement de ZackPDF depuis le menu « Ouvrir avec »
+      const launch = async () => {
+        ctx.classList.remove('open'); sub.classList.remove('open')
+        dockZ.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-16px)' }, { transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }], { duration: 650, easing: 'ease-out' })
+        dockZ.classList.add('running')
+        const target = pt(zw)
+        await Promise.all(tiles.map((tile, i) => {
+          const ico = $('.doc-ico', tile), from = pt(ico, 0, 0)
+          const fly = ico.cloneNode(true)
+          fly.classList.add('fly')
+          fly.style.left = from.x + 'px'
+          fly.style.top = from.y + 'px'
+          stage.append(fly)
+          return fly.animate([
+            { transform: 'none', opacity: 1 },
+            { transform: `translate(${target.x - from.x - 27}px, ${target.y - from.y - 34}px) rotate(${(i - 1) * 14}deg) scale(.5)`, opacity: 0 },
+          ], { duration: 620, delay: i * 90, easing: 'cubic-bezier(.5, 0, .2, 1)', fill: 'both' }).finished.then(() => fly.remove())
+        }))
+        const d = pt(dockZ)
+        zw.style.opacity = 1
+        await zw.animate([
+          { transform: `translate(${d.x - target.x}px, ${d.y - target.y}px) scale(.05)`, opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ], { duration: 520, easing: 'cubic-bezier(.2, .9, .3, 1.12)' }).finished
+        for (const tile of tiles) {
+          addTab(p1, tile.dataset.doc)
+          await wait(380)
+        }
+      }
+
+      const scene = async () => {
+        reset()
+        await wait(600)
+        cursor.style.opacity = 1
+        setStep(1)
+        await move(pt($('.doc-ico', tiles[0]), .55, .55), 1000)
+        await click(); select(tiles[0])
+        await wait(250)
+        key.classList.add('on')
+        await wait(300)
+        for (const tile of tiles.slice(1)) {
+          await move(pt($('.doc-ico', tile), .55, .55), 650)
+          await click(); select(tile)
+          await wait(220)
+        }
+        key.classList.remove('on')
+        await wait(450)
+
+        setStep(2)
+        await click(true)
+        ctx.style.left = cx + 4 + 'px'
+        ctx.style.top = cy + 4 + 'px'
+        ctx.classList.add('open')
+        await wait(450)
+        await move(pt(withItem, .3, .5), 450)
+        withItem.classList.add('hover'); sub.classList.add('open')
+        await wait(350)
+        await move(pt(zackItem, .3, .5), 520)
+        zackItem.classList.add('hover')
+        await wait(450)
+        await click()
+        await launch()
+
+        setStep(3)
+        await wait(250)
+        await move(pt(tabOf(p1, 'rapport')), 750)
+        await click(); activate(p1, 'rapport')
+        await wait(550)
+        await move(pt(p1.split), 750)
+        p1.split.classList.add('hot')
+        await wait(200)
+        await click()
+        p1.split.classList.remove('hot')
+        addTab(p2, 'rapport')
+        body.classList.add('split')
+        await wait(1000)
+
+        // Glisser l'onglet « Contrat » vers le panneau de droite
+        const dragged = tabOf(p1, 'contrat')
+        await move(pt(dragged), 700)
+        press(true)
+        const ghost = dragged.cloneNode(true)
+        ghost.className = 'tab ghost'
+        cursor.append(ghost)
+        dragged.classList.add('lifted')
+        await wait(150)
+        await move(pt(p2.tabs, .62, .55), 950)
+        ghost.remove()
+        dragged.remove()
+        press(false)
+        addTab(p2, 'contrat')
+        await wait(500)
+        await move({ x: 975, y: 585 }, 1100)
+        await wait(3600)
+
+        cursor.style.opacity = 0
+        await layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: 'forwards' }).finished
+      }
+
+      // État final, sans animation
+      const still = () => {
+        reset()
+        tiles.forEach(select)
+        zw.style.opacity = 1
+        dockZ.classList.add('running')
+        addTab(p1, 'rapport', false)
+        addTab(p1, 'cours', false)
+        activate(p1, 'rapport', false)
+        addTab(p2, 'rapport', false)
+        addTab(p2, 'contrat', false)
+        body.style.transition = 'none'
+        body.classList.add('split')
+        steps.forEach((li) => li.classList.add('on'))
+      }
+
+      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        still()
+      } else {
+        ;(async () => {
+          for (;;) {
+            try { await scene() } catch (err) { console.error(err); await sleep(1000) }
+          }
+        })()
+      }
+    })()
   </script>
 </body>
 </html>
