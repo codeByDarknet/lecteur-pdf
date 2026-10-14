@@ -21,7 +21,7 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-blue" alt="Licence MIT"></a>
 </p>
 
-![ZackPDF : deux documents affichés côte à côte](website/assets/capture-sombre.png)
+![ZackPDF : modification du texte d’un rapport en mode Édition ultra](website/assets/edit-ultra.webp)
 
 ## Fonctionnalités
 

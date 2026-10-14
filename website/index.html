@@ -3,17 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ZackPDF — lecteur PDF gratuit et open source</title>
-  <meta name="description" content="ZackPDF, le lecteur PDF gratuit et open source pour Windows, macOS et Linux. Ouvrez plusieurs PDF d'un coup, en onglets et côte à côte, avec la recherche dans tout le document et la reprise de lecture.">
-  <meta property="og:title" content="ZackPDF — lecteur PDF gratuit et open source">
-  <meta property="og:description" content="Tous vos PDF, une seule fenêtre. Gratuit, sans compte, pour Windows, macOS et Linux.">
-  <meta property="og:image" content="https://codebydarknet.github.io/zackpdf/assets/capture-sombre.png">
+  <title>ZackPDF — Lisez, annotez et modifiez vos PDF</title>
+  <meta name="description" content="ZackPDF est un éditeur et lecteur PDF gratuit et open source pour Windows, macOS et Linux. Modifiez le texte d'un PDF en gardant sa police, annotez, travaillez en onglets et côte à côte. Hors ligne, sans compte.">
+  <meta name="theme-color" content="#0d1428" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta property="og:title" content="ZackPDF — Lisez, annotez et modifiez vos PDF">
+  <meta property="og:description" content="Éditeur et lecteur PDF gratuit et open source. Modifiez le texte en gardant la police d'origine, annotez, travaillez côte à côte. Windows, macOS, Linux.">
+  <meta property="og:image" content="https://codebydarknet.github.io/zackpdf/assets/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:url" content="https://codebydarknet.github.io/zackpdf/">
   <meta property="og:type" content="website">
+  <meta property="og:locale" content="fr_FR">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Inter+Tight:wght@600;700&display=swap" rel="stylesheet">
+  <script>
+    // Thème choisi par le visiteur, appliqué avant l'affichage
+    try { const t = localStorage.getItem('zk-theme'); if (t) document.documentElement.dataset.theme = t } catch {}
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "ZackPDF",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "license": "https://opensource.org/licenses/MIT",
+    "url": "https://codebydarknet.github.io/zackpdf/"
+  }
+  </script>
   <style>
     :root {
       --navy: #162041;
@@ -21,664 +44,644 @@
       --yellow: #F3CC4B;
       --lav: #B9BEFF;
       --lav-dark: #566CC3;
-      --bg: #FFFBF4;
-      --surface: #FFFFFF;
-      --text: #162041;
-      --muted: #55607f;
-      --border: #162041;
-      --soft-border: #e6e1d6;
-      --shadow: 6px 6px 0 var(--navy);
-      --radius: 18px;
-      --max: 1120px;
 
-      /* Scène de démonstration */
-      --desk: #C9CEFF;
-      --desk-dot: rgba(22, 32, 65, .12);
-      --win: #FFFFFF;
-      --win-bar: #F4F1EA;
-      --win-line: #E4E0D6;
-      --win-text: #162041;
-      --win-muted: #6b7493;
-      --app-view: #ECEAF4;
-      --page-line: #DCDEEA;
+      --bg: #ffffff;
+      --bg-alt: #f6f7fb;
+      --surface: #ffffff;
+      --text: #121a33;
+      --muted: #5b6480;
+      --faint: #8a91a8;
+      --border: #e4e7f0;
+      --border-strong: #d3d8e6;
+      --accent: #4a5fc1;
+      --accent-soft: rgba(86, 108, 195, .1);
+      --btn-bg: #162041;
+      --btn-text: #ffffff;
+      --shot-shadow: 0 30px 80px -20px rgba(22, 32, 65, .35), 0 0 0 1px rgba(22, 32, 65, .08);
+      --glow: radial-gradient(60% 50% at 50% 0%, rgba(185, 190, 255, .45), transparent 70%);
+      color-scheme: light;
     }
     @media (prefers-color-scheme: dark) {
-      :root {
-        --bg: #0f1530;
-        --surface: #182042;
-        --text: #F4F2EC;
-        --muted: #aab1cf;
-        --border: #F4F2EC;
-        --soft-border: #2a3463;
-        --shadow: 6px 6px 0 #000;
-
-        --desk: #1B2450;
-        --desk-dot: rgba(185, 190, 255, .12);
-        --win: #1E2750;
-        --win-bar: #252F5E;
-        --win-line: #323d72;
-        --win-text: #F4F2EC;
-        --win-muted: #a3abcf;
-        --app-view: #121937;
+      :root:not([data-theme="light"]) {
+        --bg: #0b1122;
+        --bg-alt: #0f172b;
+        --surface: #131b33;
+        --text: #eef0f8;
+        --muted: #a3aac2;
+        --faint: #747c96;
+        --border: #222c48;
+        --border-strong: #2e3a5c;
+        --accent: #a3abff;
+        --accent-soft: rgba(185, 190, 255, .12);
+        --btn-bg: #eef0f8;
+        --btn-text: #0b1122;
+        --shot-shadow: 0 30px 90px -20px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .08);
+        --glow: radial-gradient(60% 50% at 50% 0%, rgba(86, 108, 195, .35), transparent 70%);
+        color-scheme: dark;
       }
     }
+    :root[data-theme="dark"] {
+      --bg: #0b1122;
+      --bg-alt: #0f172b;
+      --surface: #131b33;
+      --text: #eef0f8;
+      --muted: #a3aac2;
+      --faint: #747c96;
+      --border: #222c48;
+      --border-strong: #2e3a5c;
+      --accent: #a3abff;
+      --accent-soft: rgba(185, 190, 255, .12);
+      --btn-bg: #eef0f8;
+      --btn-text: #0b1122;
+      --shot-shadow: 0 30px 90px -20px rgba(0, 0, 0, .7), 0 0 0 1px rgba(255, 255, 255, .08);
+      --glow: radial-gradient(60% 50% at 50% 0%, rgba(86, 108, 195, .35), transparent 70%);
+      color-scheme: dark;
+    }
+
     * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
       background: var(--bg);
       color: var(--text);
       font: 16px/1.6 Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
       -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
     }
-    h1, h2, h3 { font-family: "Bricolage Grotesque", Inter, sans-serif; line-height: 1.05; margin: 0; }
+    img { max-width: 100%; height: auto; display: block; }
     a { color: inherit; }
-    img { max-width: 100%; display: block; }
-    .wrap { max-width: var(--max); margin: 0 auto; padding: 0 16px; }
+    h1, h2, h3 { font-family: "Inter Tight", Inter, system-ui, sans-serif; letter-spacing: -0.02em; line-height: 1.12; margin: 0; }
+    p { margin: 0; }
+    code, kbd { font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, Menlo, Consolas, monospace; font-size: .86em; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
 
-    /* Navigation */
-    nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--soft-border); }
-    nav .wrap { display: flex; align-items: center; gap: 24px; height: 64px; }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; text-decoration: none; font-family: "Bricolage Grotesque", sans-serif; font-size: 20px; white-space: nowrap; }
-    .brand img { width: 36px; height: 36px; }
-    nav .links { margin-left: auto; display: flex; gap: 22px; align-items: center; }
-    nav .links a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 15px; }
-    nav .links a:hover { color: var(--text); }
-    @media (max-width: 640px) { nav .links a.optional { display: none; } }
-    @media (max-width: 420px) { nav .wrap { gap: 12px; } nav .links { gap: 14px; } }
+    .wrap { width: min(1160px, 100% - 32px); margin-inline: auto; }
+    section { padding: 112px 0; }
+    .alt { background: var(--bg-alt); border-block: 1px solid var(--border); }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 600; color: var(--accent);
+      letter-spacing: .02em;
+    }
+    .head { max-width: 680px; margin-bottom: 56px; }
+    .head.center { margin-inline: auto; text-align: center; }
+    .head h2 { font-size: clamp(30px, 4.2vw, 44px); margin-top: 10px; }
+    .head p { color: var(--muted); font-size: 18px; margin-top: 16px; }
 
     /* Boutons */
     .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      height: 48px; padding: 0 22px; border-radius: 10px;
+      font: 600 15px/1 Inter, sans-serif; text-decoration: none; white-space: nowrap;
+      border: 1px solid transparent; transition: transform .15s, background .15s, border-color .15s;
+    }
+    .btn svg { width: 18px; height: 18px; flex: none; }
+    .btn-primary { background: var(--btn-bg); color: var(--btn-text); }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-ghost { border-color: var(--border-strong); color: var(--text); }
+    .btn-ghost:hover { background: var(--bg-alt); }
+
+    /* Navigation */
+    .nav {
+      position: sticky; top: 0; z-index: 50;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: saturate(1.6) blur(14px); -webkit-backdrop-filter: saturate(1.6) blur(14px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav .wrap { display: flex; align-items: center; gap: 32px; height: 64px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; text-decoration: none; letter-spacing: -0.01em; }
+    .brand img { width: 28px; height: 28px; }
+    .nav-links { display: flex; gap: 28px; margin-right: auto; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14.5px; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      display: inline-grid; place-items: center; width: 38px; height: 38px;
+      border-radius: 9px; border: 1px solid var(--border); background: transparent; color: var(--muted);
+      cursor: pointer; text-decoration: none;
+    }
+    .icon-btn:hover { color: var(--text); border-color: var(--border-strong); }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .nav .btn { height: 38px; padding: 0 16px; font-size: 14px; border-radius: 9px; }
+    .theme-toggle .moon { display: none; }
+    :root[data-theme="dark"] .theme-toggle .sun { display: none; }
+    :root[data-theme="dark"] .theme-toggle .moon { display: block; }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) .theme-toggle .sun { display: none; }
+      :root:not([data-theme="light"]) .theme-toggle .moon { display: block; }
+    }
+
+    /* Accueil */
+    .hero { position: relative; padding: 88px 0 0; text-align: center; overflow: hidden; }
+    .hero::before { content: ""; position: absolute; inset: 0 0 auto; height: 720px; background: var(--glow); pointer-events: none; }
+    .hero .wrap { position: relative; }
+    .announce {
       display: inline-flex; align-items: center; gap: 10px;
-      padding: 14px 22px; border-radius: 14px; border: 2.5px solid var(--navy);
-      font-weight: 600; text-decoration: none; cursor: pointer; font-size: 16px;
-      transition: transform .12s ease, box-shadow .12s ease;
+      padding: 6px 14px 6px 6px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 13.5px; color: var(--muted); text-decoration: none;
     }
-    .btn-primary { background: var(--coral); color: #fff; box-shadow: 4px 4px 0 var(--navy); }
-    .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--navy); }
-    .btn-ghost { background: var(--surface); color: var(--text); border-color: var(--border); }
-    .btn-ghost:hover { background: color-mix(in srgb, var(--lav) 30%, var(--surface)); }
-    .btn svg { width: 20px; height: 20px; flex: none; }
-    nav .links a.btn-primary { padding: 8px 16px; font-size: 14px; color: #fff; }
+    .announce b { background: var(--coral); color: #fff; font-weight: 600; font-size: 12px; padding: 3px 9px; border-radius: 999px; }
+    .announce:hover { border-color: var(--border-strong); color: var(--text); }
+    .hero h1 { font-size: clamp(40px, 7vw, 76px); max-width: 900px; margin: 28px auto 0; letter-spacing: -0.028em; }
+    .hero h1 span { color: var(--accent); }
+    .lede { max-width: 640px; margin: 22px auto 0; font-size: clamp(17px, 2vw, 20px); color: var(--muted); }
+    .cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 36px; }
+    .meta { margin-top: 20px; font-size: 14px; color: var(--faint); }
+    .meta span + span::before { content: "·"; margin: 0 10px; }
 
-    /* Hero */
-    .hero { padding: 64px 0 24px; text-align: center; position: relative; }
-    .pill { display: inline-block; padding: 4px 14px; border-radius: 999px; background: var(--yellow); color: var(--navy); font-weight: 600; font-size: 13px; border: 2px solid var(--navy); margin-bottom: 20px; }
-    .hero h1 { font-size: clamp(42px, 7.4vw, 84px); font-weight: 800; letter-spacing: -2px; }
-    .hero h1 mark { background: linear-gradient(transparent 58%, var(--yellow) 58%, var(--yellow) 92%, transparent 92%); color: inherit; padding: 0 6px; }
-    .hero h1 .coral { color: var(--coral); }
-    .hero p.lead { font-size: clamp(17px, 2.2vw, 21px); color: var(--muted); max-width: 680px; margin: 20px auto 32px; }
-    .cta { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
-    .version { margin-top: 14px; color: var(--muted); font-size: 14px; }
-
-    /* Scène animée */
-    .demo { position: relative; max-width: 1000px; margin: 56px auto 0; }
-    .stage-box {
-      position: relative; width: 100%; aspect-ratio: 1000 / 600;
-      border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden;
-      box-shadow: 10px 10px 0 var(--navy); background: var(--desk);
+    .frame {
+      border-radius: 14px; overflow: hidden; background: #0b0b0b;
+      box-shadow: var(--shot-shadow);
     }
-    @media (prefers-color-scheme: dark) { .stage-box { box-shadow: 10px 10px 0 #000; } }
-    .stage {
-      position: absolute; left: 0; top: 0; width: 1000px; height: 600px;
-      transform-origin: 0 0; transform: scale(var(--s, 1));
-      background: radial-gradient(var(--desk-dot) 1.5px, transparent 1.6px) 0 0 / 22px 22px;
-      font: 13px/1.35 Inter, system-ui, sans-serif; color: var(--win-text); text-align: left;
-      user-select: none; pointer-events: none;
-    }
-    .layer { position: absolute; inset: 0; }
+    .hero .frame { margin: 64px auto 0; max-width: 1160px; }
 
-    .sticker {
-      position: absolute; z-index: 3; top: -26px; right: -18px; width: 104px; height: 104px;
-      border-radius: 50%; background: var(--yellow); color: var(--navy); border: 3px solid var(--navy);
-      display: grid; place-items: center; text-align: center; font: 800 17px/1.05 "Bricolage Grotesque", sans-serif;
-      transform: rotate(12deg); box-shadow: 4px 4px 0 var(--navy);
-    }
-    @media (max-width: 640px) {
-      .sticker { width: 62px; height: 62px; font-size: 11px; top: -38px; right: -4px; border-width: 2.5px; box-shadow: 3px 3px 0 var(--navy); }
-      .steps li { font-size: 14px; }
-    }
-    .blob { position: absolute; z-index: -1; border: 3px solid var(--navy); }
-    .blob.b1 { width: 160px; height: 160px; border-radius: 50%; background: var(--coral); left: -54px; top: 38%; }
-    .blob.b2 { width: 120px; height: 120px; border-radius: 24px; background: var(--lav); right: -46px; bottom: 40px; transform: rotate(14deg); }
-    @media (max-width: 1100px) { .blob { display: none; } }
+    /* Garanties */
+    .trust { padding: 56px 0; border-bottom: 1px solid var(--border); }
+    .trust ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .trust li { display: flex; gap: 14px; align-items: flex-start; }
+    .trust svg { width: 22px; height: 22px; flex: none; color: var(--accent); margin-top: 2px; }
+    .trust strong { display: block; font-size: 15px; }
+    .trust span { color: var(--muted); font-size: 14px; }
 
-    .win { position: absolute; background: var(--win); border: 2.5px solid var(--navy); border-radius: 12px; overflow: hidden; box-shadow: 6px 6px 0 rgba(22, 32, 65, .9); }
-    .win-bar { height: 34px; display: flex; align-items: center; gap: 7px; padding: 0 12px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); font-weight: 600; }
-    .win-bar i { width: 11px; height: 11px; border-radius: 50%; border: 1.5px solid var(--navy); }
-    .win-bar i:nth-child(1) { background: var(--coral); } .win-bar i:nth-child(2) { background: var(--yellow); } .win-bar i:nth-child(3) { background: #7fd49b; }
-    .win-bar span { margin-left: 10px; }
+    /* Fonctionnalités principales */
+    .feature { display: grid; grid-template-columns: 5fr 7fr; gap: 64px; align-items: center; }
+    .feature + .feature { margin-top: 120px; }
+    .feature.flip { grid-template-columns: 7fr 5fr; }
+    .feature.flip .copy { order: 2; }
+    .copy h3 { font-size: clamp(26px, 3.2vw, 34px); margin-top: 10px; }
+    .copy > p { color: var(--muted); font-size: 17px; margin-top: 16px; }
+    .points { list-style: none; padding: 0; margin: 28px 0 0; display: grid; gap: 14px; }
+    .points li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; font-size: 15.5px; }
+    .points svg { width: 20px; height: 20px; color: var(--accent); margin-top: 2px; }
+    .points b { font-weight: 600; }
+    .points span { color: var(--muted); }
 
-    /* Explorateur de fichiers */
-    .ex { left: 46px; top: 44px; width: 560px; height: 430px; display: flex; flex-direction: column; }
-    .ex-body { flex: 1; display: flex; min-height: 0; }
-    .ex aside { width: 132px; padding: 12px 8px; border-right: 2px solid var(--win-line); display: flex; flex-direction: column; gap: 2px; }
-    .ex aside p { margin: 0 8px 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .6px; color: var(--win-muted); font-weight: 600; }
-    .ex aside a { padding: 5px 8px; border-radius: 7px; color: var(--win-muted); }
-    .ex aside a.on { background: color-mix(in srgb, var(--lav) 40%, transparent); color: var(--win-text); font-weight: 600; }
-    .grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 150px; gap: 8px; padding: 18px; align-content: start; }
-    .tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; border-radius: 12px; border: 2px solid transparent; transition: background .15s, border-color .15s; }
-    .tile span { font-size: 12.5px; text-align: center; padding: 1px 6px; border-radius: 5px; }
-    .tile.sel { background: color-mix(in srgb, var(--lav) 42%, transparent); border-color: var(--lav-dark); }
-    .tile.sel span { background: var(--lav-dark); color: #fff; }
-    .ex-status { height: 30px; border-top: 2px solid var(--win-line); display: flex; align-items: center; padding: 0 14px; font-size: 12px; color: var(--win-muted); background: var(--win-bar); }
-    .ex-status b { color: var(--win-text); }
-
-    .doc-ico {
-      position: relative; width: 54px; height: 68px; flex: none;
-      background: #FBFBFC repeating-linear-gradient(#FBFBFC 0 16px, #D9D9DE 16px 19px, #FBFBFC 19px 25px) 9px 0 / 30px 100% no-repeat;
-      border: 2.5px solid var(--navy); border-radius: 5px 16px 5px 5px;
-    }
-    .doc-ico b {
-      position: absolute; left: -8px; bottom: 9px; padding: 1px 6px; border-radius: 5px; border: 2px solid var(--navy);
-      font: 800 10.5px/1.3 Inter, sans-serif; color: #fff; background: var(--coral); letter-spacing: .3px;
-    }
-    .doc-ico.jpg b { background: var(--yellow); color: var(--navy); }
-    .doc-ico.txt b { background: var(--lav); color: var(--navy); }
-    .doc-ico.xls b { background: #4caf7a; }
-
-    /* Menu contextuel */
-    .ctx { position: absolute; z-index: 6; width: 196px; padding: 6px; background: var(--win); border: 2.5px solid var(--navy); border-radius: 11px; box-shadow: 5px 5px 0 rgba(22, 32, 65, .9); display: none; }
-    .ctx.open { display: block; animation: pop .14s ease-out; }
-    .ci { position: relative; padding: 6px 10px; border-radius: 7px; display: flex; align-items: center; gap: 9px; white-space: nowrap; }
-    .ci > span { margin-left: auto; font-weight: 700; color: var(--win-muted); }
-    .ci.hover { background: var(--lav-dark); color: #fff; }
-    .ci.hover > span { color: #fff; }
-    .ci.danger { color: #d24a35; }
-    .ci img { width: 20px; height: 20px; }
-    .sep { height: 2px; background: var(--win-line); margin: 5px 4px; }
-    .sub { position: absolute; left: calc(100% + 4px); top: -8px; width: 214px; padding: 6px; background: var(--win); color: var(--win-text); border: 2.5px solid var(--navy); border-radius: 11px; box-shadow: 5px 5px 0 rgba(22, 32, 65, .9); display: none; }
-    .sub.open { display: block; animation: pop .14s ease-out; }
-    .ci.zi { font-weight: 700; }
-    .ci.zi em { margin-left: auto; font-style: normal; font-size: 10.5px; font-weight: 700; padding: 1px 6px; border-radius: 5px; background: var(--yellow); color: var(--navy); }
-    @keyframes pop { from { opacity: 0; transform: scale(.94); } }
-
-    /* Dock */
-    .dock {
-      position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); display: flex; gap: 12px; align-items: flex-end;
-      padding: 8px 12px; background: color-mix(in srgb, var(--win) 75%, transparent); border: 2.5px solid var(--navy); border-radius: 16px;
-    }
-    .di { position: relative; width: 40px; height: 40px; border-radius: 11px; border: 2px solid var(--navy); display: grid; place-items: center; }
-    .di svg { width: 22px; height: 22px; color: var(--navy); }
-    .di.z { background: #fff; padding: 3px; }
-    .di.z img { width: 100%; height: 100%; }
-    .di.z::after { content: ""; position: absolute; bottom: -8px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--navy); opacity: 0; transition: opacity .2s; }
-    .di.z.running::after { opacity: 1; }
-    @media (prefers-color-scheme: dark) { .di.z::after { background: #F4F2EC; } }
-
-    /* Fenêtre ZackPDF */
-    .zw { left: 118px; top: 22px; width: 820px; height: 500px; display: flex; flex-direction: column; opacity: 0; z-index: 5; }
-    .zw-bar { height: 38px; display: flex; align-items: center; gap: 9px; padding: 0 12px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); font-weight: 700; }
-    .zw-bar img { width: 22px; height: 22px; }
-    .zw-bar .ctl { margin-left: auto; display: flex; gap: 16px; color: var(--win-muted); font-weight: 600; }
-    .zw-body { flex: 1; min-height: 0; display: grid; grid-template-columns: 1fr 0fr; transition: grid-template-columns .55s cubic-bezier(.3, .9, .3, 1); }
-    .zw-body.split { grid-template-columns: 1fr 1fr; }
-    .pane { min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
-    .pane + .pane { border-left: 2px solid var(--win-line); }
-    .tabs { height: 36px; flex: none; display: flex; align-items: flex-end; gap: 4px; padding: 0 8px; background: var(--win-bar); border-bottom: 2px solid var(--win-line); overflow: hidden; }
-    .tab { height: 29px; display: flex; align-items: center; gap: 7px; padding: 0 10px; border-radius: 8px 8px 0 0; font-size: 12px; color: var(--win-muted); white-space: nowrap; flex: none; }
-    .tab::before { content: ""; width: 9px; height: 11px; border: 1.5px solid currentColor; border-radius: 2px 4px 2px 2px; flex: none; }
-    .tab::after { content: "×"; font-size: 14px; opacity: .55; }
-    .tab.on { background: var(--win); color: var(--win-text); font-weight: 600; box-shadow: inset 0 3px 0 var(--coral); }
-    .tab.new { animation: tabIn .32s cubic-bezier(.3, 1.4, .5, 1); }
-    .tab.lifted { opacity: .3; }
-    @keyframes tabIn { from { opacity: 0; transform: translateY(12px) scale(.9); } }
-    .tools { height: 34px; flex: none; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-bottom: 2px solid var(--win-line); color: var(--win-muted); font-size: 12px; white-space: nowrap; }
-    .tools .grow { flex: 1; }
-    .tb { width: 24px; height: 24px; border-radius: 6px; display: grid; place-items: center; flex: none; transition: background .15s; }
-    .tb svg { width: 15px; height: 15px; }
-    .tb.hot { background: color-mix(in srgb, var(--lav) 55%, transparent); color: var(--win-text); }
-    .view { flex: 1; min-height: 0; background: var(--app-view); display: flex; justify-content: center; padding-top: 18px; overflow: hidden; }
-
-    /* Pages dessinées */
-    .page { width: 258px; height: 360px; flex: none; background: #fff; color: #162041; border-radius: 3px; box-shadow: 0 2px 0 rgba(0, 0, 0, .08), 0 8px 24px rgba(22, 32, 65, .18); padding: 22px; }
-    .page.in { animation: pageIn .35s ease-out; }
-    @keyframes pageIn { from { opacity: 0; transform: translateY(10px); } }
-    .page h4 { margin: 0; font: 800 17px/1.15 "Bricolage Grotesque", sans-serif; }
-    .page .sub-t { margin: 3px 0 14px; font-size: 10.5px; color: #6b7493; }
-    .ln { height: 6px; border-radius: 3px; background: var(--page-line); margin: 8px 0; }
-    .ln.w9 { width: 90%; } .ln.w7 { width: 70%; } .ln.w5 { width: 50%; }
-    .ln.mark { background: var(--yellow); box-shadow: 0 0 0 3px color-mix(in srgb, var(--yellow) 45%, transparent); }
-    .bars { display: flex; align-items: flex-end; gap: 9px; height: 104px; padding: 0 4px; border-bottom: 2px solid #162041; margin-bottom: 14px; }
-    .bars i { flex: 1; border: 2px solid #162041; border-bottom: 0; border-radius: 4px 4px 0 0; }
-    .kpis { display: flex; gap: 8px; margin-bottom: 12px; }
-    .kpis div { flex: 1; border: 2px solid #162041; border-radius: 7px; padding: 5px 7px; font: 800 15px/1.1 "Bricolage Grotesque", sans-serif; }
-    .kpis small { display: block; font: 500 9px/1.2 Inter, sans-serif; color: #6b7493; }
-    .sign { display: flex; gap: 12px; margin-top: 18px; }
-    .sign div { flex: 1; height: 58px; border: 2px dashed #b4b8cc; border-radius: 7px; display: grid; place-items: center; }
-    .sign svg { width: 80%; height: 34px; }
-    .formula { font: italic 600 15px/1 Georgia, serif; padding: 8px 10px; background: #F8E5E1; border-radius: 7px; margin-bottom: 10px; text-align: center; }
-    .curve { width: 100%; height: 118px; display: block; margin-bottom: 8px; }
-
-    /* Curseur */
-    .cursor { position: absolute; left: 0; top: 0; z-index: 9; width: 0; height: 0; opacity: 0; transition: opacity .25s; }
-    .cursor .arrow { position: absolute; left: -3px; top: -2px; width: 26px; height: 32px; transform-origin: 3px 2px; filter: drop-shadow(2px 3px 0 rgba(22, 32, 65, .35)); }
-    .cursor .key { position: absolute; left: 22px; top: 26px; padding: 2px 7px; border-radius: 6px; border: 2px solid var(--navy); background: var(--yellow); color: var(--navy); font: 700 11px/1.2 Inter, sans-serif; box-shadow: 2px 2px 0 var(--navy); opacity: 0; transform: scale(.6); transition: opacity .15s, transform .15s; }
-    .cursor .key.on { opacity: 1; transform: none; }
-    .cursor .ghost { position: absolute; left: 10px; top: 14px; box-shadow: 4px 4px 0 rgba(22, 32, 65, .5); border: 2px solid var(--navy); border-radius: 8px; background: var(--win); color: var(--win-text); transform: rotate(-4deg); }
-    .ripple { position: absolute; z-index: 8; width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--coral); }
-    .ripple.right { border-color: var(--lav-dark); }
-    .fly { position: absolute; z-index: 7; }
-
-    /* Étapes sous la scène */
-    .steps { list-style: none; padding: 0; margin: 28px auto 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-    .steps li { display: flex; align-items: center; gap: 10px; padding: 8px 16px 8px 8px; border-radius: 999px; border: 2px solid var(--soft-border); color: var(--muted); font-weight: 600; font-size: 15px; transition: all .25s; }
-    .steps li b { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--soft-border); color: var(--text); font-size: 13px; transition: all .25s; }
-    .steps li.on { border-color: var(--navy); color: var(--text); background: var(--surface); box-shadow: 3px 3px 0 var(--navy); }
-    .steps li.on b { background: var(--coral); color: #fff; }
-    @media (prefers-color-scheme: dark) { .steps li.on { border-color: var(--border); box-shadow: 3px 3px 0 #000; } }
-    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-
-    /* Bandeau défilant */
-    .ticker { margin: 72px 0 0; background: var(--coral); border-block: 3px solid var(--navy); transform: rotate(-1.6deg); overflow: hidden; }
-    .ticker-track { display: flex; width: max-content; animation: tick 32s linear infinite; }
-    .ticker span { padding: 14px 0; font: 800 24px/1 "Bricolage Grotesque", sans-serif; color: #fff; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
-    .ticker span::after { content: "✦"; color: var(--yellow); margin: 0 28px; }
-    @keyframes tick { to { transform: translateX(-50%); } }
-
-    /* Sections */
-    section { padding: 88px 0; }
-    .section-title { text-align: center; margin-bottom: 48px; }
-    .section-title h2 { font-size: clamp(32px, 4.8vw, 52px); font-weight: 800; letter-spacing: -1px; }
-    .section-title p { color: var(--muted); max-width: 600px; margin: 12px auto 0; font-size: 18px; }
-
-    .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 22px; }
-    .feature { background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 26px; box-shadow: var(--shadow); transition: transform .18s ease, box-shadow .18s ease; }
-    .feature:hover { transform: translate(-3px, -3px) rotate(-.4deg); box-shadow: 9px 9px 0 var(--navy); }
-    @media (prefers-color-scheme: dark) { .feature:hover { box-shadow: 9px 9px 0 #000; } }
-    .feature .icon { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; border: 2.5px solid var(--navy); margin-bottom: 18px; color: var(--navy); }
-    .feature .icon svg { width: 26px; height: 26px; }
-    .feature h3 { font-size: 22px; margin-bottom: 8px; }
-    .feature p { margin: 0; color: var(--muted); }
-    .c-coral { background: var(--coral); } .c-yellow { background: var(--yellow); } .c-lav { background: var(--lav); }
-
-    /* Vraie application */
-    .real { display: flex; flex-direction: column; align-items: center; }
-    .switch { display: inline-flex; padding: 4px; border: 2.5px solid var(--border); border-radius: 999px; background: var(--surface); margin-bottom: 28px; }
-    .switch button { border: 0; background: none; color: var(--muted); font: 600 15px Inter, sans-serif; padding: 8px 18px; border-radius: 999px; cursor: pointer; }
-    .switch button[aria-pressed="true"] { background: var(--navy); color: #fff; }
-    @media (prefers-color-scheme: dark) { .switch button[aria-pressed="true"] { background: var(--yellow); color: var(--navy); } }
-    .shot { width: 100%; max-width: 1040px; border: 3px solid var(--navy); border-radius: var(--radius); overflow: hidden; box-shadow: 10px 10px 0 var(--navy); background: var(--navy); }
-    .shot img { width: 100%; height: auto; }
-    .shot img[hidden] { display: none; }
+    /* Grille secondaire */
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .cell { background: var(--bg); padding: 32px; }
+    .alt .cell { background: var(--bg-alt); }
+    .cell svg { width: 24px; height: 24px; color: var(--accent); }
+    .cell h3 { font-size: 17px; letter-spacing: -0.01em; margin-top: 18px; font-family: Inter, sans-serif; font-weight: 600; }
+    .cell p { color: var(--muted); font-size: 15px; margin-top: 8px; }
 
     /* Raccourcis */
-    .shortcuts { max-width: 640px; margin: 0 auto; background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); overflow: hidden; }
-    .shortcuts div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 22px; border-top: 1px solid var(--soft-border); }
-    .shortcuts div:first-child { border-top: 0; }
-    kbd { font: 600 13px/1 ui-monospace, SFMono-Regular, Menlo, monospace; padding: 6px 9px; border-radius: 8px; border: 2px solid var(--border); background: var(--bg); white-space: nowrap; box-shadow: 0 2px 0 var(--border); }
+    .keys { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+    .keys h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--faint); font-family: Inter, sans-serif; font-weight: 600; margin-bottom: 8px; }
+    .keys dl { margin: 0; }
+    .keys dl div { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--border); font-size: 15px; }
+    .keys dd { margin: 0; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; align-items: center; }
+    .keys dd i { font-style: normal; color: var(--faint); font-size: 13px; padding: 0 2px; }
+    kbd {
+      display: inline-block; min-width: 26px; padding: 3px 8px; text-align: center;
+      border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 6px;
+      background: var(--surface); color: var(--text); font-size: 12.5px; white-space: nowrap;
+    }
 
     /* Téléchargements */
-    #telecharger { background: var(--navy); color: #F4F2EC; }
-    #telecharger .section-title p { color: #c4c9e4; }
-    .platforms { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 22px; }
-    .platform { background: #1d2752; border: 2.5px solid #3a4785; border-radius: var(--radius); padding: 26px; display: flex; flex-direction: column; gap: 12px; }
-    .platform.detected { border-color: var(--yellow); box-shadow: 0 0 0 4px color-mix(in srgb, var(--yellow) 30%, transparent); }
-    .platform header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
-    .platform header svg { width: 32px; height: 32px; }
-    .platform h3 { font-size: 26px; }
-    .platform .badge { margin-left: auto; font-size: 12px; font-weight: 600; background: var(--yellow); color: var(--navy); padding: 3px 10px; border-radius: 999px; display: none; }
+    .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
+    .platform { border: 1px solid var(--border); border-radius: 16px; padding: 28px; background: var(--surface); }
+    .platform.detected { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+    .platform header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .platform header svg { width: 26px; height: 26px; }
+    .platform h3 { font-size: 20px; }
+    .badge { display: none; margin-left: auto; font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; }
     .platform.detected .badge { display: inline-block; }
-    .dl { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 16px; border-radius: 12px; background: #263166; text-decoration: none; color: #fff; border: 2px solid transparent; transition: border-color .12s, background .12s; }
-    .dl:hover { border-color: var(--coral); background: #2c3974; }
-    .dl strong { display: block; font-weight: 600; }
-    .dl span { font-size: 13px; color: #b9c0e3; }
-    .dl svg { width: 20px; height: 20px; flex: none; color: var(--coral); }
-    .platform .hint { font-size: 13.5px; color: #b9c0e3; margin: 6px 0 0; }
-    .platform code, .faq code { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: rgba(127,127,127,.18); padding: 2px 6px; border-radius: 6px; word-break: break-all; }
-    .all-releases { text-align: center; margin-top: 36px; color: #c4c9e4; }
-    .all-releases a { color: var(--yellow); }
+    .dl {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 16px; margin-top: 10px; border: 1px solid var(--border); border-radius: 11px;
+      text-decoration: none; transition: border-color .15s, background .15s;
+    }
+    .dl:hover { border-color: var(--accent); background: var(--accent-soft); }
+    .dl strong { display: block; font-size: 15px; font-weight: 600; }
+    .dl span { display: block; font-size: 13.5px; color: var(--muted); }
+    .dl svg { width: 18px; height: 18px; flex: none; color: var(--muted); }
+    .hint { margin-top: 16px; font-size: 13.5px; color: var(--muted); line-height: 1.55; }
+    .hint code { overflow-wrap: anywhere; background: var(--bg-alt); padding: 1px 5px; border-radius: 4px; }
+    .all-releases { text-align: center; margin-top: 36px; color: var(--muted); font-size: 15px; }
+    .all-releases a { color: var(--accent); }
 
     /* Open source */
-    .oss { display: grid; grid-template-columns: 1.2fr 1fr; gap: 40px; align-items: center; }
-    @media (max-width: 820px) { .oss { grid-template-columns: 1fr; } }
-    .oss h2 { font-size: clamp(32px, 4.8vw, 52px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
-    .oss p { color: var(--muted); font-size: 18px; }
-    .terminal { background: #0b0f22; color: #e8e8f0; border: 3px solid var(--navy); border-radius: var(--radius); padding: 22px; font: 14px/1.8 ui-monospace, SFMono-Regular, Menlo, monospace; box-shadow: var(--shadow); white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; }
+    .oss { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .oss h2 { font-size: clamp(28px, 3.6vw, 40px); margin-top: 10px; }
+    .oss p { color: var(--muted); font-size: 17px; margin-top: 16px; }
+    .oss .cta { justify-content: flex-start; }
+    .terminal {
+      margin: 0; padding: 24px 26px; border-radius: 14px; background: #0b1122; color: #d7dbf0;
+      border: 1px solid #222c48; font: 14px/1.9 ui-monospace, "JetBrains Mono", Menlo, Consolas, monospace; overflow-x: auto;
+    }
+    .terminal .c { color: #6f7896; }
     .terminal .p { color: var(--coral); user-select: none; }
-    .terminal .c { color: #7c86b8; }
+    .stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .stack span { font-size: 13px; color: var(--muted); border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; }
 
-    /* FAQ */
-    .faq { max-width: 760px; margin: 0 auto; display: grid; gap: 14px; }
-    details { background: var(--surface); border: 2.5px solid var(--border); border-radius: 14px; padding: 4px 22px; }
-    summary { cursor: pointer; font-weight: 600; padding: 14px 0; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
-    summary::-webkit-details-marker { display: none; }
-    summary::after { content: "+"; font-size: 22px; line-height: 1; color: var(--coral); }
-    details[open] summary::after { content: "−"; }
-    details p { margin: 0 0 16px; color: var(--muted); }
+    /* Questions */
+    .faq { max-width: 780px; margin-inline: auto; border-top: 1px solid var(--border); }
+    .faq details { border-bottom: 1px solid var(--border); }
+    .faq summary {
+      list-style: none; cursor: pointer; padding: 22px 0; font-weight: 600; font-size: 17px;
+      display: flex; justify-content: space-between; gap: 16px; align-items: center;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary::after { content: "+"; font-weight: 400; font-size: 24px; color: var(--faint); transition: transform .2s; }
+    .faq details[open] summary::after { transform: rotate(45deg); }
+    .faq details p { color: var(--muted); padding: 0 0 22px; max-width: 680px; }
+    .faq code { background: var(--bg-alt); padding: 1px 5px; border-radius: 4px; }
 
     /* Appel final */
     .final { text-align: center; }
-    .final img { width: 96px; height: 96px; margin: 0 auto 18px; animation: float 5s ease-in-out infinite; }
-    .final h2 { font-size: clamp(34px, 5.4vw, 60px); font-weight: 800; letter-spacing: -1.5px; margin-bottom: 26px; }
-    @keyframes float { 50% { transform: translateY(-8px) rotate(-3deg); } }
+    .final img { width: 64px; height: 64px; margin: 0 auto 24px; }
+    .final h2 { font-size: clamp(30px, 4.6vw, 48px); }
+    .final p { color: var(--muted); font-size: 18px; margin-top: 14px; }
 
-    footer { border-top: 1px solid var(--soft-border); padding: 36px 0; color: var(--muted); font-size: 14px; }
-    footer .wrap { display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center; }
-    footer a { color: var(--muted); }
+    footer { border-top: 1px solid var(--border); padding: 32px 0; font-size: 14px; color: var(--muted); }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer nav { display: flex; gap: 22px; flex-wrap: wrap; }
+    footer a { text-decoration: none; }
+    footer a:hover { color: var(--text); }
 
+    @media (max-width: 960px) {
+      section { padding: 80px 0; }
+      .nav-links { display: none; }
+      .trust ul { grid-template-columns: 1fr 1fr; }
+      .feature, .feature.flip { grid-template-columns: 1fr; gap: 36px; }
+      .feature.flip .copy { order: 0; }
+      .feature + .feature { margin-top: 88px; }
+      .grid { grid-template-columns: 1fr 1fr; }
+      .keys, .oss { grid-template-columns: 1fr; gap: 40px; }
+      .platforms { grid-template-columns: 1fr; max-width: 560px; margin-inline: auto; }
+    }
+    @media (max-width: 600px) {
+      section { padding: 64px 0; }
+      .hero { padding-top: 56px; }
+      .hero .frame { margin-top: 44px; border-radius: 10px; }
+      .nav .btn { display: none; }
+      .trust ul, .grid { grid-template-columns: 1fr; }
+      .cell { padding: 26px; }
+      .cta .btn { width: 100%; }
+      .meta span { display: inline-block; }
+      .platform { padding: 22px; }
+      .keys dl div { font-size: 14px; }
+    }
     @media (prefers-reduced-motion: reduce) {
-      .ticker-track, .final img { animation: none; }
-      .feature, .btn { transition: none; }
+      html { scroll-behavior: auto; }
+      .btn, .dl { transition: none; }
     }
   </style>
 </head>
 <body>
-  <nav>
+  <header class="nav">
     <div class="wrap">
-      <a class="brand" href="#"><img src="assets/logo.svg" alt="">ZackPDF</a>
-      <div class="links">
-        <a class="optional" href="#fonctionnalites">Fonctionnalités</a>
-        <a class="optional" href="#faq">FAQ</a>
-        <a href="https://github.com/codeByDarknet/zackpdf">GitHub</a>
+      <a class="brand" href="#"><img src="assets/logo.svg" alt="" width="28" height="28">ZackPDF</a>
+      <nav class="nav-links" aria-label="Sections">
+        <a href="#edition">Édition</a>
+        <a href="#annotation">Annotation</a>
+        <a href="#lecture">Lecture</a>
+        <a href="#faq">Questions</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="icon-btn theme-toggle" type="button" aria-label="Changer de thème">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+        </button>
+        <a class="icon-btn" href="https://github.com/codeByDarknet/zackpdf" aria-label="Code source sur GitHub">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
+        </a>
         <a class="btn btn-primary" href="#telecharger">Télécharger</a>
       </div>
     </div>
-  </nav>
-
-  <header class="hero">
-    <div class="wrap">
-      <span class="pill">Gratuit · Open source · Sans compte</span>
-      <h1>Tous vos PDF.<br><mark>Une seule fenêtre<span class="coral">.</span></mark></h1>
-      <p class="lead">Sélectionnez plusieurs documents, faites « Ouvrir avec ZackPDF » : ils s'ouvrent en onglets, prêts à être lus et comparés côte à côte. Pour Windows, macOS et Linux.</p>
-      <div class="cta">
-        <a class="btn btn-primary" id="main-download" href="#telecharger">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          <span id="main-download-label">Télécharger gratuitement</span>
-        </a>
-        <a class="btn btn-ghost" href="https://github.com/codeByDarknet/zackpdf">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5Z"/></svg>
-          Voir le code source
-        </a>
-      </div>
-      <p class="version" id="version">Windows · macOS · Linux</p>
-
-      <figure class="demo">
-        <span class="blob b1"></span><span class="blob b2"></span>
-        <div class="sticker">100 %<br>gratuit</div>
-        <div class="stage-box" id="stage-box" aria-hidden="true">
-          <div class="stage" id="stage">
-            <div class="layer" id="layer">
-              <div class="win ex" id="explorer">
-                <div class="win-bar"><i></i><i></i><i></i><span>Documents</span></div>
-                <div class="ex-body">
-                  <aside><p>Favoris</p><a>Bureau</a><a class="on">Documents</a><a>Téléchargements</a><a>Images</a><a>Musique</a></aside>
-                  <div class="grid">
-                    <div class="tile" data-doc="rapport"><div class="doc-ico"><b>PDF</b></div><span>Rapport-2026.pdf</span></div>
-                    <div class="tile"><div class="doc-ico jpg"><b>JPG</b></div><span>Vacances.jpg</span></div>
-                    <div class="tile" data-doc="contrat"><div class="doc-ico"><b>PDF</b></div><span>Contrat-v2.pdf</span></div>
-                    <div class="tile"><div class="doc-ico txt"><b>TXT</b></div><span>Notes.txt</span></div>
-                    <div class="tile" data-doc="cours"><div class="doc-ico"><b>PDF</b></div><span>Cours-maths.pdf</span></div>
-                    <div class="tile"><div class="doc-ico xls"><b>XLS</b></div><span>Budget.xlsx</span></div>
-                  </div>
-                </div>
-                <div class="ex-status" id="ex-status">6 éléments</div>
-              </div>
-
-              <div class="ctx" id="ctx">
-                <div class="ci">Ouvrir</div>
-                <div class="ci" id="ci-with">Ouvrir avec <span>›</span>
-                  <div class="sub" id="sub">
-                    <div class="ci zi" id="ci-zack"><img src="assets/logo.svg" alt="">ZackPDF <em>conseillé</em></div>
-                    <div class="ci">Visionneuse de documents</div>
-                    <div class="ci">Navigateur web</div>
-                    <div class="sep"></div>
-                    <div class="ci">Autre application…</div>
-                  </div>
-                </div>
-                <div class="sep"></div>
-                <div class="ci">Copier</div>
-                <div class="ci">Renommer</div>
-                <div class="ci">Compresser</div>
-                <div class="sep"></div>
-                <div class="ci danger">Supprimer</div>
-              </div>
-
-              <div class="win zw" id="zw">
-                <div class="zw-bar"><img src="assets/logo.svg" alt="">ZackPDF<span class="ctl"><span>—</span><span>▢</span><span>✕</span></span></div>
-                <div class="zw-body" id="zw-body"><div class="pane" id="p1"></div><div class="pane" id="p2"></div></div>
-              </div>
-            </div>
-
-            <div class="dock">
-              <span class="di" style="background:var(--yellow)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 6h6l2 2h10v11H3z"/></svg></span>
-              <span class="di" style="background:var(--lav)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.5 2.6 2.5 14.4 0 17M12 3.5c-2.5 2.6-2.5 14.4 0 17"/></svg></span>
-              <span class="di z" id="dock-z"><img src="assets/logo.svg" alt=""></span>
-              <span class="di" style="background:var(--coral)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></span>
-              <span class="di" style="background:#7fd49b"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></span>
-            </div>
-
-            <div class="cursor" id="cursor">
-              <svg class="arrow" viewBox="0 0 26 32"><path d="M3 2v24l6.5-6 4.2 9.4 4.4-2-4.1-9.2H23z" fill="#fff" stroke="#162041" stroke-width="2.4" stroke-linejoin="round"/></svg>
-              <span class="key" id="key">Ctrl</span>
-            </div>
-          </div>
-        </div>
-        <figcaption class="sr">Animation : trois PDF sont sélectionnés dans l'explorateur de fichiers, puis ouverts avec ZackPDF. Ils apparaissent en onglets, et deux d'entre eux sont affichés côte à côte.</figcaption>
-        <ol class="steps" id="steps">
-          <li data-step="1"><b>1</b>Sélectionnez vos PDF</li>
-          <li data-step="2"><b>2</b>Ouvrir avec ZackPDF</li>
-          <li data-step="3"><b>3</b>Lisez-les côte à côte</li>
-        </ol>
-      </figure>
-    </div>
   </header>
 
-  <div class="ticker" aria-hidden="true">
-    <div class="ticker-track">
-      <span>Gratuit</span><span>Open source</span><span>Sans compte</span><span>Hors ligne</span><span>Onglets</span><span>Côte à côte</span><span>Windows</span><span>macOS</span><span>Linux</span>
-      <span>Gratuit</span><span>Open source</span><span>Sans compte</span><span>Hors ligne</span><span>Onglets</span><span>Côte à côte</span><span>Windows</span><span>macOS</span><span>Linux</span>
-    </div>
-  </div>
-
-  <section id="fonctionnalites">
-    <div class="wrap">
-      <div class="section-title">
-        <h2>Tout ce qu'il faut, rien de trop</h2>
-        <p>Pensé pour lire, comparer et retrouver une information sans perdre de temps.</p>
-      </div>
-      <div class="features">
-        <article class="feature">
-          <div class="icon c-coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></div>
-          <h3>Panneaux côte à côte</h3>
-          <p>Scindez la fenêtre pour comparer deux documents, ou deux pages du même document, sans jongler entre les fenêtres.</p>
-        </article>
-        <article class="feature">
-          <div class="icon c-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9h18"/><path d="M3 5h6l2 4"/><rect x="3" y="5" width="18" height="15" rx="2"/></svg></div>
-          <h3>Onglets</h3>
-          <p>Ouvrez autant de PDF que vous voulez, d'un seul coup. Glissez un onglet d'un panneau à l'autre pour réorganiser votre espace.</p>
-        </article>
-        <article class="feature">
-          <div class="icon c-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></div>
-          <h3>Recherche dans tout le document</h3>
-          <p>Chaque occurrence est surlignée et vous passez de l'une à l'autre en un clic, même sur des centaines de pages.</p>
-        </article>
-        <article class="feature">
-          <div class="icon c-lav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></div>
-          <h3>Reprise de lecture</h3>
-          <p>Fermez l'application, rouvrez-la : vos onglets, vos panneaux et la page où vous en étiez sont restaurés.</p>
-        </article>
-        <article class="feature">
-          <div class="icon c-coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg></div>
-          <h3>Miniatures et zoom</h3>
-          <p>Naviguez avec les miniatures des pages, zoomez avec Ctrl + molette. Les pages se chargent au fil du défilement pour rester fluide.</p>
-        </article>
-        <article class="feature">
-          <div class="icon c-yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></div>
-          <h3>Thème clair ou sombre</h3>
-          <p>Un thème sombre reposant pour lire le soir, un thème clair pour la journée. Et un double-clic sur un PDF suffit à l'ouvrir.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="wrap real">
-      <div class="section-title">
-        <h2>La vraie application</h2>
-        <p>Pas de maquette ici : voici ZackPDF tel que vous l'installerez.</p>
-      </div>
-      <div class="switch" role="group" aria-label="Thème de la capture">
-        <button type="button" data-theme="dark" aria-pressed="true">Thème sombre</button>
-        <button type="button" data-theme="light" aria-pressed="false">Thème clair</button>
-      </div>
-      <div class="shot">
-        <img data-theme="dark" src="assets/capture-sombre.png" width="1920" height="1080" loading="lazy" alt="ZackPDF en thème sombre : deux documents affichés côte à côte avec les miniatures">
-        <img data-theme="light" src="assets/capture-clair.png" width="1920" height="1080" loading="lazy" alt="ZackPDF en thème clair : recherche d'un mot surligné dans le document" hidden>
-      </div>
-    </div>
-  </section>
-
-  <section style="padding-top:0">
-    <div class="wrap">
-      <div class="section-title">
-        <h2>Au clavier</h2>
-        <p>Les raccourcis s'appliquent au panneau actif.</p>
-      </div>
-      <div class="shortcuts">
-        <div><span>Rechercher dans le document</span><kbd>Ctrl + F</kbd></div>
-        <div><span>Zoomer / dézoomer</span><span><kbd>Ctrl + +</kbd> <kbd>Ctrl + −</kbd></span></div>
-        <div><span>Revenir à 100 %</span><kbd>Ctrl + 0</kbd></div>
-        <div><span>Zoom à la souris</span><kbd>Ctrl + molette</kbd></div>
-        <div><span>Occurrence suivante / précédente</span><span><kbd>Entrée</kbd> <kbd>Maj + Entrée</kbd></span></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="telecharger">
-    <div class="wrap">
-      <div class="section-title">
-        <h2>Télécharger</h2>
-        <p>Gratuit, sans publicité et sans compte. Choisissez votre système.</p>
-      </div>
-      <div class="platforms">
-        <article class="platform" data-os="windows">
-          <header>
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10 4.5v7H3zM11 4.3 21 3v8.5H11zM3 12.5h7v7l-7-1zM11 12.5h10V21l-10-1.4z"/></svg>
-            <h3>Windows</h3><span class="badge">Votre système</span>
-          </header>
-          <a class="dl" data-file="ZackPDF-Windows-Setup.exe">
-            <div><strong>Installateur</strong><span>Windows 10 et 11 · 64 bits · .exe</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+  <main>
+    <section class="hero">
+      <div class="wrap">
+        <a class="announce" href="#edition"><b>Nouveau</b> Version 1.1 : édition de PDF complète</a>
+        <h1>Lisez, annotez et <span>modifiez</span> vos&nbsp;PDF.</h1>
+        <p class="lede">ZackPDF corrige le texte d'un PDF comme dans un traitement de texte, en gardant sa police d'origine. Annotation, onglets, vue côte à côte : tout votre travail sur les PDF, dans une application rapide qui ne quitte jamais votre ordinateur.</p>
+        <div class="cta">
+          <a class="btn btn-primary" id="main-download" href="#telecharger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span id="main-download-label">Télécharger gratuitement</span>
           </a>
-          <a class="dl" data-file="ZackPDF-Windows-Portable.exe">
-            <div><strong>Version portable</strong><span>Sans installation, à lancer depuis une clé USB</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <p class="hint">Si Windows affiche « Windows a protégé votre ordinateur », cliquez sur <b>Informations complémentaires</b> puis <b>Exécuter quand même</b>.</p>
-        </article>
-
-        <article class="platform" data-os="mac">
-          <header>
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1ZM13.9 4.9c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5Z"/></svg>
-            <h3>macOS</h3><span class="badge">Votre système</span>
-          </header>
-          <a class="dl" data-file="ZackPDF-macOS-arm64.dmg">
-            <div><strong>Apple Silicon</strong><span>Mac M1, M2, M3, M4… · .dmg</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <a class="dl" data-file="ZackPDF-macOS-x64.dmg">
-            <div><strong>Intel</strong><span>Mac avec processeur Intel · .dmg</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <p class="hint">L'application n'est pas signée par Apple. Au premier lancement : clic droit sur l'app → <b>Ouvrir</b>. Si macOS indique qu'elle est endommagée, lancez dans le Terminal : <code>xattr -cr "/Applications/ZackPDF.app"</code></p>
-        </article>
-
-        <article class="platform" data-os="linux">
-          <header>
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-2.2 0-3.6 1.8-3.6 4.3 0 1.3.2 2.2-.5 3.4-.9 1.4-2.6 3.6-2.9 6-.2 1.3.2 2.2.8 2.7-.4.5-1 1.2-.6 1.9.5.9 2.4.4 3.6.9 1.2.5 2.7.9 3.6-.2h.4c.9 1.1 2.4.7 3.6.2 1.2-.5 3.1 0 3.6-.9.4-.7-.2-1.4-.6-1.9.6-.5 1-1.4.8-2.7-.3-2.4-2-4.6-2.9-6-.7-1.2-.5-2.1-.5-3.4C15.6 3.8 14.2 2 12 2Zm-1.5 4.2c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1Zm3 0c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1ZM12 9.3c.9 0 2.2.6 2.2 1.1 0 .4-1.3 1.2-2.2 1.2s-2.2-.8-2.2-1.2c0-.5 1.3-1.1 2.2-1.1Z"/></svg>
-            <h3>Linux</h3><span class="badge">Votre système</span>
-          </header>
-          <a class="dl" data-file="ZackPDF-Linux-x86_64.AppImage">
-            <div><strong>AppImage</strong><span>Toutes les distributions · sans installation</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <a class="dl" data-file="zackpdf_amd64.deb">
-            <div><strong>.deb</strong><span>Ubuntu, Debian, Linux Mint, Pop!_OS…</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <a class="dl" data-file="zackpdf.x86_64.rpm">
-            <div><strong>.rpm</strong><span>Fedora, openSUSE, RHEL…</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <a class="dl" data-file="ZackPDF-Linux-x64.tar.gz">
-            <div><strong>.tar.gz</strong><span>Archive pour Arch et les autres distributions</span></div>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-          </a>
-          <p class="hint">AppImage : rendez le fichier exécutable avec <code>chmod +x ZackPDF-Linux-x86_64.AppImage</code> puis lancez-le.</p>
-        </article>
-      </div>
-      <p class="all-releases">Toutes les versions et les sommes de contrôle SHA-256 sont sur la <a href="https://github.com/codeByDarknet/zackpdf/releases">page des releases GitHub</a>.</p>
-    </div>
-  </section>
-
-  <section>
-    <div class="wrap oss">
-      <div>
-        <span class="pill">Licence MIT</span>
-        <h2>Open source, pour de vrai</h2>
-        <p>Le code de ZackPDF est public sur GitHub. Vous pouvez le lire, le modifier, l'améliorer et le redistribuer librement. Vos documents restent sur votre ordinateur : l'application ne collecte rien et n'envoie rien.</p>
-        <div class="cta" style="justify-content:flex-start;margin-top:26px">
-          <a class="btn btn-primary" href="https://github.com/codeByDarknet/zackpdf">Contribuer sur GitHub</a>
-          <a class="btn btn-ghost" href="https://github.com/codeByDarknet/zackpdf/issues/new/choose">Signaler un bug</a>
+          <a class="btn btn-ghost" href="https://github.com/codeByDarknet/zackpdf">Voir le code source</a>
+        </div>
+        <p class="meta"><span id="version">Windows · macOS · Linux</span><span>Gratuit</span><span>Open source (MIT)</span><span>Hors ligne</span></p>
+        <div class="frame">
+          <img src="assets/edit-ultra.webp" width="1440" height="900" fetchpriority="high" alt="ZackPDF en mode Édition ultra : la date du sous-titre et un indicateur chiffré d'un rapport sont modifiés directement dans le PDF">
         </div>
       </div>
-      <pre class="terminal"><span class="c"># Lancer le projet en local</span>
-<span class="p">$</span> git clone https://github.com/codeByDarknet/zackpdf
-<span class="p">$</span> cd zackpdf
-<span class="p">$</span> npm install
-<span class="p">$</span> npm run dev</pre>
-    </div>
-  </section>
+    </section>
 
-  <section id="faq" style="padding-top:0">
-    <div class="wrap">
-      <div class="section-title"><h2>Questions fréquentes</h2></div>
-      <div class="faq">
-        <details>
-          <summary>Est-ce vraiment gratuit ?</summary>
-          <p>Oui. ZackPDF est gratuit, sans publicité, sans abonnement et sans compte. Le code est sous licence MIT.</p>
-        </details>
-        <details>
-          <summary>Mes documents sont-ils envoyés quelque part ?</summary>
-          <p>Non. Les PDF sont lus directement depuis votre disque. L'application fonctionne entièrement hors ligne et n'envoie aucune donnée.</p>
-        </details>
-        <details>
-          <summary>Comment ouvrir plusieurs PDF d'un coup ?</summary>
-          <p>Sélectionnez-les dans votre explorateur de fichiers (Ctrl + clic, ou Cmd + clic sur Mac), puis clic droit → <b>Ouvrir avec</b> → <b>ZackPDF</b>. Chaque document s'ouvre dans son propre onglet. Si ZackPDF est déjà ouvert, ils rejoignent la fenêtre existante.</p>
-        </details>
-        <details>
-          <summary>Comment en faire mon lecteur PDF par défaut ?</summary>
-          <p>Après l'installation, faites un clic droit sur un PDF → <b>Ouvrir avec</b> → <b>ZackPDF</b>, et cochez l'option pour toujours l'utiliser. Sous Windows, passez par <b>Paramètres → Applications → Applications par défaut</b>.</p>
-        </details>
-        <details>
-          <summary>Pourquoi mon système affiche-t-il un avertissement ?</summary>
-          <p>Les certificats de signature de Microsoft et d'Apple sont payants, et l'application n'en a pas encore. Le code est public et chaque version est construite automatiquement sur GitHub à partir de ce code. Vous pouvez vérifier le fichier téléchargé avec le fichier <code>SHA256SUMS.txt</code> de la release.</p>
-        </details>
-        <details>
-          <summary>Comment mettre à jour ?</summary>
-          <p>Téléchargez la nouvelle version depuis cette page et installez-la par-dessus l'ancienne. Vos onglets et votre session sont conservés.</p>
-        </details>
+    <section class="trust" aria-label="Garanties">
+      <div class="wrap">
+        <ul>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <div><strong>100 % local</strong><span>Vos fichiers ne quittent jamais votre ordinateur.</span></div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="m3 3 18 18"/></svg>
+            <div><strong>Sans compte</strong><span>Ni inscription, ni publicité, ni abonnement.</span></div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></svg>
+            <div><strong>Open source</strong><span>Code public sous licence MIT.</span></div>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+            <div><strong>Multiplateforme</strong><span>Windows, macOS et Linux.</span></div>
+          </li>
+        </ul>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section class="final" style="padding-top:0">
-    <div class="wrap">
-      <img src="assets/logo.svg" alt="">
-      <h2>Prêt à ranger vos PDF ?</h2>
-      <a class="btn btn-primary" href="#telecharger">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-        Télécharger ZackPDF
-      </a>
-    </div>
-  </section>
+    <section id="edition">
+      <div class="wrap">
+        <div class="feature">
+          <div class="copy">
+            <span class="eyebrow">Édition ultra</span>
+            <h3>Modifiez le texte du PDF, pas une copie.</h3>
+            <p>Cliquez sur une ligne et corrigez-la directement. ZackPDF reprend la police, la taille et la couleur d'origine, puis réécrit vraiment le fichier : l'ancien texte disparaît, il n'est pas simplement masqué.</p>
+            <ul class="points">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Police d'origine conservée.</b> <span>Si elle est installée, elle est intégrée au PDF enregistré ; sinon, une police calibrée garde la largeur de la ligne.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Toutes vos polices.</b> <span>Un sélecteur avec recherche propose chaque police installée, prévisualisée dans son propre style, avec gras et italique.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Suppression réelle.</b> <span>Le texte effacé n'est plus ni visible, ni copiable, ni extractible.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Images et gomme.</b> <span>Insérez ou collez une image, effacez une zone, un tampon ou un logo.</span></div></li>
+            </ul>
+          </div>
+          <div class="frame">
+            <img src="assets/fonts.webp" width="1440" height="900" loading="lazy" alt="Sélecteur de police de ZackPDF ouvert sur un contrat : polices installées affichées dans leur propre style">
+          </div>
+        </div>
+
+        <div class="feature flip" id="annotation">
+          <div class="copy">
+            <span class="eyebrow">Annotation</span>
+            <h3>Relisez, commentez, validez.</h3>
+            <p>Surlignez un passage, ajoutez une note, encadrez un chiffre : les annotations sont enregistrées dans le PDF et s'affichent dans n'importe quel lecteur.</p>
+            <ul class="points">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Texte sélectionné.</b> <span>Surligner, souligner ou barrer en un geste.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Formes et dessin.</b> <span>Rectangles, ellipses, flèches, lignes et main levée, dans la couleur de votre choix.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Tout reste modifiable.</b> <span>Sélectionnez, déplacez, redimensionnez ; annulez et rétablissez à volonté.</span></div></li>
+            </ul>
+          </div>
+          <div class="frame">
+            <img src="assets/annotate.webp" width="1440" height="900" loading="lazy" alt="Contrat annoté dans ZackPDF : montants surlignés, note rouge, flèche et cadre autour d'une durée">
+          </div>
+        </div>
+
+        <div class="feature" id="lecture">
+          <div class="copy">
+            <span class="eyebrow">Lecture et organisation</span>
+            <h3>Plusieurs documents, une seule fenêtre.</h3>
+            <p>Ouvrez autant de PDF que nécessaire en onglets, comparez-les côte à côte et retrouvez chaque mot en un instant. À la réouverture, vous reprenez exactement là où vous en étiez.</p>
+            <ul class="points">
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Onglets et panneaux.</b> <span>Glissez un onglet d'un panneau à l'autre pour comparer deux documents.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Recherche instantanée.</b> <span>Toutes les occurrences surlignées, navigation au clavier.</span></div></li>
+              <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg><div><b>Reprise de session.</b> <span>Onglets, pages et zoom sont restaurés au lancement.</span></div></li>
+            </ul>
+          </div>
+          <div class="frame">
+            <img src="assets/split-light.webp" width="1440" height="900" loading="lazy" alt="ZackPDF en thème clair : un contrat et un rapport côte à côte, recherche du mot « installations » surlignée">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="alt">
+      <div class="wrap">
+        <div class="head center">
+          <span class="eyebrow">Et aussi</span>
+          <h2>Pensé pour le travail quotidien.</h2>
+        </div>
+        <div class="grid">
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/></svg>
+            <h3>Rapide sur les gros fichiers</h3>
+            <p>Les pages sont rendues à la demande : un document de plusieurs centaines de pages s'ouvre sans attendre.</p>
+          </div>
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+            <h3>Ouvrir avec…</h3>
+            <p>Sélectionnez plusieurs PDF dans l'explorateur : ils rejoignent la fenêtre ouverte, chacun dans son onglet.</p>
+          </div>
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+            <h3>Enregistrement sûr</h3>
+            <p>Enregistrez en place ou sous un nouveau nom. ZackPDF vous prévient avant de fermer un document modifié.</p>
+          </div>
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+            <h3>Miniatures et zoom</h3>
+            <p>Parcourez les pages en miniatures, zoomez à la molette, au clavier ou ajustez la page à la fenêtre.</p>
+          </div>
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor"/></svg>
+            <h3>Thème clair ou sombre</h3>
+            <p>Passez d’un thème à l’autre d’un clic, pour lire confortablement de jour comme de nuit.</p>
+          </div>
+          <div class="cell">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>
+            <h3>Entièrement au clavier</h3>
+            <p>Recherche, zoom, annulation, enregistrement : les gestes fréquents ont leur raccourci.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="raccourcis">
+      <div class="wrap">
+        <div class="head">
+          <span class="eyebrow">Raccourcis</span>
+          <h2>Allez plus vite.</h2>
+          <p>Sur Mac, remplacez <kbd>Ctrl</kbd> par <kbd>⌘</kbd>. Les raccourcis s'appliquent au panneau actif.</p>
+        </div>
+        <div class="keys">
+          <div>
+            <h3>Lecture</h3>
+            <dl>
+              <div><dt>Ouvrir des fichiers</dt><dd><kbd>Ctrl</kbd><kbd>O</kbd></dd></div>
+              <div><dt>Rechercher dans le document</dt><dd><kbd>Ctrl</kbd><kbd>F</kbd></dd></div>
+              <div><dt>Occurrence suivante / précédente</dt><dd><kbd>Entrée</kbd><i>/</i><kbd>Maj</kbd><kbd>Entrée</kbd></dd></div>
+              <div><dt>Zoomer / dézoomer</dt><dd><kbd>Ctrl</kbd><kbd>+</kbd><i>/</i><kbd>Ctrl</kbd><kbd>−</kbd></dd></div>
+              <div><dt>Revenir à 100 %</dt><dd><kbd>Ctrl</kbd><kbd>0</kbd></dd></div>
+              <div><dt>Zoom à la souris</dt><dd><kbd>Ctrl</kbd><kbd>molette</kbd></dd></div>
+            </dl>
+          </div>
+          <div>
+            <h3>Édition</h3>
+            <dl>
+              <div><dt>Enregistrer</dt><dd><kbd>Ctrl</kbd><kbd>S</kbd></dd></div>
+              <div><dt>Enregistrer sous</dt><dd><kbd>Ctrl</kbd><kbd>Maj</kbd><kbd>S</kbd></dd></div>
+              <div><dt>Annuler / rétablir</dt><dd><kbd>Ctrl</kbd><kbd>Z</kbd><i>/</i><kbd>Ctrl</kbd><kbd>Y</kbd></dd></div>
+              <div><dt>Valider la ligne modifiée</dt><dd><kbd>Ctrl</kbd><kbd>Entrée</kbd></dd></div>
+              <div><dt>Supprimer l'élément sélectionné</dt><dd><kbd>Suppr</kbd></dd></div>
+              <div><dt>Annuler la saisie, désélectionner</dt><dd><kbd>Échap</kbd></dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="telecharger" class="alt">
+      <div class="wrap">
+        <div class="head center">
+          <span class="eyebrow">Télécharger</span>
+          <h2>Installez ZackPDF en une minute.</h2>
+          <p>Gratuit, sans publicité et sans compte. Choisissez votre système.</p>
+        </div>
+        <div class="platforms">
+          <article class="platform" data-os="windows">
+            <header>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5 10 4.5v7H3zM11 4.3 21 3v8.5H11zM3 12.5h7v7l-7-1zM11 12.5h10V21l-10-1.4z"/></svg>
+              <h3>Windows</h3><span class="badge">Votre système</span>
+            </header>
+            <a class="dl" data-file="ZackPDF-Windows-Setup.exe">
+              <div><strong>Installateur</strong><span>Windows 10 et 11 · 64 bits · .exe</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <a class="dl" data-file="ZackPDF-Windows-Portable.exe">
+              <div><strong>Version portable</strong><span>Sans installation, depuis une clé USB</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <p class="hint">Si Windows affiche « Windows a protégé votre ordinateur », cliquez sur <b>Informations complémentaires</b> puis <b>Exécuter quand même</b>.</p>
+          </article>
+
+          <article class="platform" data-os="mac">
+            <header>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.1ZM13.9 4.9c.7-.9 1.2-2 1.1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.1.1 2.3-.6 3-1.5Z"/></svg>
+              <h3>macOS</h3><span class="badge">Votre système</span>
+            </header>
+            <a class="dl" data-file="ZackPDF-macOS-arm64.dmg">
+              <div><strong>Apple Silicon</strong><span>Mac M1, M2, M3, M4… · .dmg</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <a class="dl" data-file="ZackPDF-macOS-x64.dmg">
+              <div><strong>Intel</strong><span>Mac avec processeur Intel · .dmg</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <p class="hint">L'application n'est pas signée par Apple. Au premier lancement : clic droit sur l'app → <b>Ouvrir</b>. Si macOS indique qu'elle est endommagée, lancez dans le Terminal : <code>xattr -cr "/Applications/ZackPDF.app"</code></p>
+          </article>
+
+          <article class="platform" data-os="linux">
+            <header>
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c-2.2 0-3.6 1.8-3.6 4.3 0 1.3.2 2.2-.5 3.4-.9 1.4-2.6 3.6-2.9 6-.2 1.3.2 2.2.8 2.7-.4.5-1 1.2-.6 1.9.5.9 2.4.4 3.6.9 1.2.5 2.7.9 3.6-.2h.4c.9 1.1 2.4.7 3.6.2 1.2-.5 3.1 0 3.6-.9.4-.7-.2-1.4-.6-1.9.6-.5 1-1.4.8-2.7-.3-2.4-2-4.6-2.9-6-.7-1.2-.5-2.1-.5-3.4C15.6 3.8 14.2 2 12 2Zm-1.5 4.2c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1Zm3 0c.4 0 .7.5.7 1.1 0 .6-.3 1.1-.7 1.1s-.7-.5-.7-1.1c0-.6.3-1.1.7-1.1ZM12 9.3c.9 0 2.2.6 2.2 1.1 0 .4-1.3 1.2-2.2 1.2s-2.2-.8-2.2-1.2c0-.5 1.3-1.1 2.2-1.1Z"/></svg>
+              <h3>Linux</h3><span class="badge">Votre système</span>
+            </header>
+            <a class="dl" data-file="ZackPDF-Linux-x86_64.AppImage">
+              <div><strong>AppImage</strong><span>Toutes les distributions · sans installation</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <a class="dl" data-file="zackpdf_amd64.deb">
+              <div><strong>.deb</strong><span>Ubuntu, Debian, Linux Mint, Pop!_OS…</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <a class="dl" data-file="zackpdf.x86_64.rpm">
+              <div><strong>.rpm</strong><span>Fedora, openSUSE, RHEL…</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <a class="dl" data-file="ZackPDF-Linux-x64.tar.gz">
+              <div><strong>.tar.gz</strong><span>Arch et autres distributions</span></div>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            </a>
+            <p class="hint">AppImage : rendez le fichier exécutable avec <code>chmod +x ZackPDF-Linux-x86_64.AppImage</code> puis lancez-le.</p>
+          </article>
+        </div>
+        <p class="all-releases">Toutes les versions, les notes de version et les sommes de contrôle SHA-256 sont sur la <a href="https://github.com/codeByDarknet/zackpdf/releases">page des releases GitHub</a>.</p>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap oss">
+        <div>
+          <span class="eyebrow">Open source</span>
+          <h2>Un code ouvert, des versions vérifiables.</h2>
+          <p>ZackPDF est publié sous licence MIT. Chaque version est construite automatiquement sur GitHub à partir du code public, avec ses sommes de contrôle. Vous pouvez l'auditer, l'adapter et contribuer.</p>
+          <div class="stack"><span>Electron</span><span>React</span><span>TypeScript</span><span>PDF.js</span><span>pdf-lib</span></div>
+          <div class="cta">
+            <a class="btn btn-primary" href="https://github.com/codeByDarknet/zackpdf">Contribuer sur GitHub</a>
+            <a class="btn btn-ghost" href="https://github.com/codeByDarknet/zackpdf/issues/new/choose">Signaler un bug</a>
+          </div>
+        </div>
+        <pre class="terminal"><span class="c"># Lancer le projet en local</span>
+<span class="p">$ </span>git clone https://github.com/codeByDarknet/zackpdf
+<span class="p">$ </span>cd zackpdf
+<span class="p">$ </span>npm install
+<span class="p">$ </span>npm run dev</pre>
+      </div>
+    </section>
+
+    <section id="faq" class="alt">
+      <div class="wrap">
+        <div class="head center">
+          <span class="eyebrow">Questions fréquentes</span>
+          <h2>Bon à savoir.</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Est-ce vraiment gratuit ?</summary>
+            <p>Oui. ZackPDF est gratuit, sans publicité, sans abonnement et sans compte, y compris pour l'édition. Le code est sous licence MIT.</p>
+          </details>
+          <details>
+            <summary>Mes documents sont-ils envoyés quelque part ?</summary>
+            <p>Non. Les PDF sont lus et modifiés directement sur votre disque. L'application fonctionne entièrement hors ligne et n'envoie aucune donnée.</p>
+          </details>
+          <details>
+            <summary>Le texte modifié garde-t-il la même apparence ?</summary>
+            <p>Oui, quand la police du document est installée sur votre ordinateur : ZackPDF l'utilise et l'intègre au PDF enregistré. Sinon, il choisit une police standard proche et ajuste l'espacement pour conserver la largeur de la ligne. Vous pouvez aussi choisir n'importe quelle police installée.</p>
+          </details>
+          <details>
+            <summary>Le texte supprimé est-il vraiment effacé ?</summary>
+            <p>Oui. En Édition ultra, le texte remplacé ou effacé est retiré du contenu de la page : il n'est plus visible, ni sélectionnable, ni récupérable par copier-coller ou extraction. Ce n'est pas un simple cache blanc posé par-dessus.</p>
+          </details>
+          <details>
+            <summary>Quelle différence entre Annoter et Édition ultra ?</summary>
+            <p><b>Annoter</b> ajoute des éléments par-dessus le document (surlignage, notes, formes, dessins) sans toucher au texte d'origine. <b>Édition ultra</b> modifie le contenu lui-même : texte, images, zones effacées.</p>
+          </details>
+          <details>
+            <summary>Comment ouvrir plusieurs PDF d'un coup ?</summary>
+            <p>Sélectionnez-les dans votre explorateur de fichiers (Ctrl + clic, ou ⌘ + clic sur Mac), puis clic droit → <b>Ouvrir avec</b> → <b>ZackPDF</b>. Chaque document s'ouvre dans son propre onglet ; si ZackPDF est déjà ouvert, ils rejoignent la fenêtre existante.</p>
+          </details>
+          <details>
+            <summary>Comment en faire mon lecteur PDF par défaut ?</summary>
+            <p>Faites un clic droit sur un PDF → <b>Ouvrir avec</b> → <b>ZackPDF</b>, et cochez l'option pour toujours l'utiliser. Sous Windows, passez par <b>Paramètres → Applications → Applications par défaut</b>.</p>
+          </details>
+          <details>
+            <summary>Pourquoi mon système affiche-t-il un avertissement ?</summary>
+            <p>Les certificats de signature de Microsoft et d'Apple sont payants et l'application n'en dispose pas encore. Chaque version est construite sur GitHub à partir du code public ; vous pouvez vérifier le fichier téléchargé avec le fichier <code>SHA256SUMS.txt</code> de la release.</p>
+          </details>
+          <details>
+            <summary>Comment mettre à jour ?</summary>
+            <p>Téléchargez la nouvelle version depuis cette page et installez-la par-dessus l'ancienne. Vos onglets et votre session sont conservés.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="wrap">
+        <img src="assets/logo.svg" alt="" width="64" height="64">
+        <h2>Vos PDF méritent mieux qu'une simple visionneuse.</h2>
+        <p>Gratuit pour toujours, sur Windows, macOS et Linux.</p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#telecharger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Télécharger ZackPDF
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 
   <footer>
     <div class="wrap">
       <span>© 2026 Abdoul Razack Ouedraogo · Licence MIT</span>
-      <span><a href="https://github.com/codeByDarknet/zackpdf">Code source</a> · <a href="https://github.com/codeByDarknet/zackpdf/releases">Versions</a> · <a href="https://github.com/codeByDarknet/zackpdf/issues">Signaler un bug</a></span>
+      <nav aria-label="Liens">
+        <a href="https://github.com/codeByDarknet/zackpdf">Code source</a>
+        <a href="https://github.com/codeByDarknet/zackpdf/releases">Versions</a>
+        <a href="https://github.com/codeByDarknet/zackpdf/blob/main/CHANGELOG.md">Nouveautés</a>
+        <a href="https://github.com/codeByDarknet/zackpdf/issues">Signaler un bug</a>
+      </nav>
     </div>
   </footer>
 
@@ -708,272 +711,18 @@
       .then((r) => (r.ok ? r.json() : null))
       .then((release) => {
         if (release?.tag_name) {
-          document.getElementById('version').textContent = `Version ${release.tag_name.replace(/^v/, '')} · Windows · macOS · Linux`
+          document.getElementById('version').textContent = `Version ${release.tag_name.replace(/^v/, '')} · Windows, macOS, Linux`
         }
       })
       .catch(() => {})
 
-    // Captures : thème sombre ou clair
-    const themeButtons = document.querySelectorAll('.switch button')
-    const showShot = (theme) => {
-      themeButtons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.theme === theme)))
-      document.querySelectorAll('.shot img').forEach((img) => { img.hidden = img.dataset.theme !== theme })
-    }
-    themeButtons.forEach((b) => b.addEventListener('click', () => showShot(b.dataset.theme)))
-    if (matchMedia('(prefers-color-scheme: light)').matches) showShot('light')
-  </script>
-
-  <script>
-    // Scène animée : sélection de plusieurs PDF, « Ouvrir avec ZackPDF », onglets et panneaux
-    ;(() => {
-      const $ = (s, r = document) => r.querySelector(s)
-      const box = $('#stage-box'), stage = $('#stage'), layer = $('#layer')
-      const cursor = $('#cursor'), arrow = $('.arrow', cursor), key = $('#key')
-      const ctx = $('#ctx'), withItem = $('#ci-with'), sub = $('#sub'), zackItem = $('#ci-zack')
-      const zw = $('#zw'), body = $('#zw-body'), dockZ = $('#dock-z'), status = $('#ex-status')
-      const tiles = [...stage.querySelectorAll('.tile[data-doc]')]
-      const steps = [...document.querySelectorAll('#steps li')]
-
-      const lines = (n, marked = -1) => Array.from({ length: n }, (_, i) => `<div class="ln ${['', 'w9', '', 'w7', 'w9', 'w5'][i % 6]}${i === marked ? ' mark' : ''}"></div>`).join('')
-      const DOCS = {
-        rapport: {
-          name: 'Rapport-2026.pdf', pages: 24,
-          html: `<h4>Rapport annuel 2026</h4><p class="sub-t">Synthèse des résultats</p>
-            <div class="kpis"><div>+38 %<small>Croissance</small></div><div>1 240<small>Clients</small></div></div>
-            <div class="bars"><i style="height:38%;background:#B9BEFF"></i><i style="height:55%;background:#B9BEFF"></i><i style="height:47%;background:#F3CC4B"></i><i style="height:70%;background:#F3CC4B"></i><i style="height:82%;background:#FF6C51"></i><i style="height:96%;background:#FF6C51"></i></div>
-            ${lines(4)}`,
-        },
-        contrat: {
-          name: 'Contrat-v2.pdf', pages: 9,
-          html: `<h4>Contrat de service</h4><p class="sub-t">Version 2 · Articles 1 à 9</p>${lines(11, 4)}
-            <div class="sign"><div><svg viewBox="0 0 100 34"><path d="M6 24c8-16 14-18 12-6s8-14 14-8-4 14 6 8 10-10 16-4 14 2 22-2" fill="none" stroke="#566CC3" stroke-width="2.5" stroke-linecap="round"/></svg></div><div><svg viewBox="0 0 100 34"><path d="M8 20c6-10 16-12 14 0s10-10 18-6 6 8 16 2 12-12 18-4 10 6 18 0" fill="none" stroke="#162041" stroke-width="2.5" stroke-linecap="round"/></svg></div></div>`,
-        },
-        cours: {
-          name: 'Cours-maths.pdf', pages: 16,
-          html: `<h4>Cours de maths</h4><p class="sub-t">Chapitre 4 · Fonctions du second degré</p>
-            <div class="formula">f(x) = ax² + bx + c</div>
-            <svg class="curve" viewBox="0 0 214 118"><path d="M10 104h194M107 6v108" stroke="#b4b8cc" stroke-width="2"/><path d="M30 14Q107 196 184 14" fill="none" stroke="#FF6C51" stroke-width="3.5" stroke-linecap="round"/><circle cx="107" cy="105" r="5" fill="#F3CC4B" stroke="#162041" stroke-width="2"/></svg>
-            ${lines(4)}`,
-        },
-      }
-
-      // Panneaux de la fenêtre ZackPDF
-      const makePane = (el) => {
-        el.innerHTML = `<div class="tabs"></div>
-          <div class="tools"><span class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></svg></span>
-          <span class="pg-n"></span><span class="grow"></span><span>−</span><span>100 %</span><span>+</span>
-          <span class="tb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span>
-          <span class="tb split-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M12 4v16"/></svg></span></div>
-          <div class="view"></div>`
-        return { el, tabs: $('.tabs', el), view: $('.view', el), num: $('.pg-n', el), split: $('.split-btn', el) }
-      }
-      let p1, p2
-      const tabOf = (pane, doc) => pane.tabs.querySelector(`[data-doc="${doc}"]`)
-      const activate = (pane, doc, animate = true) => {
-        pane.tabs.querySelectorAll('.tab').forEach((t) => t.classList.toggle('on', t.dataset.doc === doc))
-        pane.view.innerHTML = `<div class="page${animate ? ' in' : ''}">${DOCS[doc].html}</div>`
-        pane.num.textContent = `1 / ${DOCS[doc].pages}`
-      }
-      const addTab = (pane, doc, animate = true) => {
-        const t = document.createElement('div')
-        t.className = 'tab' + (animate ? ' new' : '')
-        t.dataset.doc = doc
-        t.textContent = DOCS[doc].name
-        pane.tabs.append(t)
-        activate(pane, doc, animate)
-      }
-
-      // Échelle de la scène (dessinée en 1000 × 600)
-      let scale = 1
-      const fit = () => { scale = box.clientWidth / 1000; stage.style.setProperty('--s', scale) }
-      new ResizeObserver(fit).observe(box)
-      fit()
-      const pt = (el, ax = 0.5, ay = 0.5) => {
-        const r = el.getBoundingClientRect(), s = stage.getBoundingClientRect()
-        return { x: (r.left - s.left + r.width * ax) / scale, y: (r.top - s.top + r.height * ay) / scale }
-      }
-
-      // Pause quand la scène n'est pas visible
-      let inView = false, waiting = null
-      const isActive = () => inView && !document.hidden
-      const refresh = () => { if (isActive() && waiting) { waiting(); waiting = null } }
-      new IntersectionObserver(([e]) => { inView = e.isIntersecting; refresh() }, { threshold: 0.25 }).observe(box)
-      document.addEventListener('visibilitychange', refresh)
-      const gate = () => (isActive() ? Promise.resolve() : new Promise((r) => { waiting = r }))
-      const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
-      const wait = async (ms) => { await gate(); await sleep(ms) }
-
-      // Curseur
-      let cx = 1040, cy = 640
-      const place = (x, y) => { cx = x; cy = y; cursor.style.transform = `translate(${x}px, ${y}px)` }
-      const move = async (to, dur = 700) => {
-        await gate()
-        const anim = cursor.animate([{ transform: `translate(${cx}px, ${cy}px)` }, { transform: `translate(${to.x}px, ${to.y}px)` }], { duration: dur, easing: 'cubic-bezier(.55, 0, .3, 1)' })
-        place(to.x, to.y)
-        await anim.finished
-      }
-      const press = (down) => arrow.animate([{ transform: `scale(${down ? 1 : .82})` }, { transform: `scale(${down ? .82 : 1})` }], { duration: 120, fill: 'forwards' })
-      const click = async (right = false) => {
-        await gate()
-        const r = document.createElement('span')
-        r.className = 'ripple' + (right ? ' right' : '')
-        r.style.left = cx - 18 + 'px'
-        r.style.top = cy - 18 + 'px'
-        stage.append(r)
-        r.animate([{ transform: 'scale(.2)', opacity: 1 }, { transform: 'scale(1.5)', opacity: 0 }], { duration: 480, easing: 'ease-out' }).finished.then(() => r.remove())
-        press(true)
-        await sleep(110)
-        press(false)
-        await sleep(110)
-      }
-      const setStep = (n) => steps.forEach((li) => li.classList.toggle('on', +li.dataset.step === n))
-      const select = (tile) => {
-        tile.classList.add('sel')
-        const n = stage.querySelectorAll('.tile.sel').length
-        status.innerHTML = `<b>${n} élément${n > 1 ? 's' : ''} sélectionné${n > 1 ? 's' : ''}</b>&nbsp;· 6 éléments`
-      }
-
-      const reset = () => {
-        layer.getAnimations().forEach((a) => a.cancel())
-        stage.querySelectorAll('.tile').forEach((t) => t.classList.remove('sel'))
-        status.textContent = '6 éléments'
-        ctx.classList.remove('open'); sub.classList.remove('open')
-        ctx.querySelectorAll('.hover').forEach((e) => e.classList.remove('hover'))
-        zw.style.opacity = 0
-        dockZ.classList.remove('running')
-        body.classList.remove('split')
-        p1 = makePane($('#p1')); p2 = makePane($('#p2'))
-        key.classList.remove('on')
-        cursor.style.opacity = 0
-        place(1040, 640)
-        setStep(0)
-      }
-
-      // Lancement de ZackPDF depuis le menu « Ouvrir avec »
-      const launch = async () => {
-        ctx.classList.remove('open'); sub.classList.remove('open')
-        dockZ.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(-16px)' }, { transform: 'translateY(0)' }, { transform: 'translateY(-8px)' }, { transform: 'translateY(0)' }], { duration: 650, easing: 'ease-out' })
-        dockZ.classList.add('running')
-        const target = pt(zw)
-        await Promise.all(tiles.map((tile, i) => {
-          const ico = $('.doc-ico', tile), from = pt(ico, 0, 0)
-          const fly = ico.cloneNode(true)
-          fly.classList.add('fly')
-          fly.style.left = from.x + 'px'
-          fly.style.top = from.y + 'px'
-          stage.append(fly)
-          return fly.animate([
-            { transform: 'none', opacity: 1 },
-            { transform: `translate(${target.x - from.x - 27}px, ${target.y - from.y - 34}px) rotate(${(i - 1) * 14}deg) scale(.5)`, opacity: 0 },
-          ], { duration: 620, delay: i * 90, easing: 'cubic-bezier(.5, 0, .2, 1)', fill: 'both' }).finished.then(() => fly.remove())
-        }))
-        const d = pt(dockZ)
-        zw.style.opacity = 1
-        await zw.animate([
-          { transform: `translate(${d.x - target.x}px, ${d.y - target.y}px) scale(.05)`, opacity: 0 },
-          { transform: 'none', opacity: 1 },
-        ], { duration: 520, easing: 'cubic-bezier(.2, .9, .3, 1.12)' }).finished
-        for (const tile of tiles) {
-          addTab(p1, tile.dataset.doc)
-          await wait(380)
-        }
-      }
-
-      const scene = async () => {
-        reset()
-        await wait(600)
-        cursor.style.opacity = 1
-        setStep(1)
-        await move(pt($('.doc-ico', tiles[0]), .55, .55), 1000)
-        await click(); select(tiles[0])
-        await wait(250)
-        key.classList.add('on')
-        await wait(300)
-        for (const tile of tiles.slice(1)) {
-          await move(pt($('.doc-ico', tile), .55, .55), 650)
-          await click(); select(tile)
-          await wait(220)
-        }
-        key.classList.remove('on')
-        await wait(450)
-
-        setStep(2)
-        await click(true)
-        ctx.style.left = cx + 4 + 'px'
-        ctx.style.top = cy + 4 + 'px'
-        ctx.classList.add('open')
-        await wait(450)
-        await move(pt(withItem, .3, .5), 450)
-        withItem.classList.add('hover'); sub.classList.add('open')
-        await wait(350)
-        await move(pt(zackItem, .3, .5), 520)
-        zackItem.classList.add('hover')
-        await wait(450)
-        await click()
-        await launch()
-
-        setStep(3)
-        await wait(250)
-        await move(pt(tabOf(p1, 'rapport')), 750)
-        await click(); activate(p1, 'rapport')
-        await wait(550)
-        await move(pt(p1.split), 750)
-        p1.split.classList.add('hot')
-        await wait(200)
-        await click()
-        p1.split.classList.remove('hot')
-        addTab(p2, 'rapport')
-        body.classList.add('split')
-        await wait(1000)
-
-        // Glisser l'onglet « Contrat » vers le panneau de droite
-        const dragged = tabOf(p1, 'contrat')
-        await move(pt(dragged), 700)
-        press(true)
-        const ghost = dragged.cloneNode(true)
-        ghost.className = 'tab ghost'
-        cursor.append(ghost)
-        dragged.classList.add('lifted')
-        await wait(150)
-        await move(pt(p2.tabs, .62, .55), 950)
-        ghost.remove()
-        dragged.remove()
-        press(false)
-        addTab(p2, 'contrat')
-        await wait(500)
-        await move({ x: 975, y: 585 }, 1100)
-        await wait(3600)
-
-        cursor.style.opacity = 0
-        await layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: 'forwards' }).finished
-      }
-
-      // État final, sans animation
-      const still = () => {
-        reset()
-        tiles.forEach(select)
-        zw.style.opacity = 1
-        dockZ.classList.add('running')
-        addTab(p1, 'rapport', false)
-        addTab(p1, 'cours', false)
-        activate(p1, 'rapport', false)
-        addTab(p2, 'rapport', false)
-        addTab(p2, 'contrat', false)
-        body.style.transition = 'none'
-        body.classList.add('split')
-        steps.forEach((li) => li.classList.add('on'))
-      }
-
-      if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        still()
-      } else {
-        ;(async () => {
-          for (;;) {
-            try { await scene() } catch (err) { console.error(err); await sleep(1000) }
-          }
-        })()
-      }
-    })()
+    // Thème clair ou sombre, mémorisé pour ce visiteur
+    document.querySelector('.theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement
+      const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches
+      root.dataset.theme = dark ? 'light' : 'dark'
+      try { localStorage.setItem('zk-theme', root.dataset.theme) } catch {}
+    })
   </script>
 </body>
 </html>
