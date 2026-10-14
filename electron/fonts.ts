@@ -171,7 +171,9 @@ export async function findFont(pdfFontName: string, bold: boolean, italic: boole
   return readFont(best.f)
 }
 
-const hidden = (name: string) => name.startsWith('.') || /emoji/i.test(name)
+// Polices de symboles (pictogrammes) : inutilisables pour du texte
+const hidden = (name: string) =>
+  name.startsWith('.') || /emoji|dingbat|wingding|webding|marlett|opensymbol|^(d050000l|standard symbols|symbol)\b/i.test(name)
 
 // Familles proposées dans le sélecteur de police
 export async function listFamilies(): Promise<FontFamily[]> {
