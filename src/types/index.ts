@@ -41,6 +41,7 @@ export interface ElectronAPI {
   readFile: (filePath: string) => Promise<ArrayBuffer>;
   saveFileDialog: (defaultPath: string) => Promise<string | null>;
   writeFile: (filePath: string, data: Uint8Array) => Promise<boolean>;
+  findFont: (name: string, bold: boolean, italic: boolean) => Promise<{ file: string; data: Uint8Array } | null>;
   getPendingFiles: () => Promise<SelectedPdfFile[]>;
   onOpenFiles: (callback: (files: SelectedPdfFile[]) => void) => () => void;
   minimizeWindow: () => Promise<void>;

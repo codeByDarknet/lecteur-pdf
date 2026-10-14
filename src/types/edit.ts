@@ -51,6 +51,10 @@ export interface TextObject extends BaseObject {
   color: string
   // Texte d'origine remplacé en mode édition ultra : id du cache qui masque l'ancien texte
   coverId?: string
+  // Étirement horizontal qui redonne au texte la largeur qu'il avait dans la police d'origine
+  scaleX?: number
+  // Police installée reprise du PDF d'origine (voir systemFonts) ; à défaut, la police standard `font`
+  systemFont?: string
 }
 
 export interface InkObject extends BaseObject {

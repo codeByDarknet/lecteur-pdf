@@ -9,12 +9,14 @@ import {
   arrowHead,
   baselineRatio,
   cssFont,
+  widthScale,
   extractSourceLines,
   mapObject,
   objectBox,
   sampleColors,
   type SourceLine,
 } from '@/lib/pdfEditing'
+import { findSystemFont } from '@/lib/systemFonts'
 import { fitImage, loadImageFile, pickImageFile } from '@/lib/editImages'
 import type { EditObject, MarkupObject, Rect, ShapeObject, TextObject } from '@/types/edit'
 
@@ -36,7 +38,7 @@ type Draft =
 type TextSession =
   | { kind: 'new'; x: number; y: number }
   | { kind: 'object'; id: string }
-  | { kind: 'line'; line: SourceLine; bg: string; fg: string; y: number }
+  | { kind: 'line'; line: SourceLine; bg: string; fg: string; y: number; scaleX: number; systemFont?: string }
 
 interface Props {
   tabId: string
@@ -328,11 +330,16 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
     setSessionKey((k) => k + 1)
   }
 
-  const editLine = (line: SourceLine) => {
+  const editLine = async (line: SourceLine) => {
     const box = { x: line.x, y: line.top, w: line.right - line.x, h: line.bottom - line.top }
     const { bg, fg } = sampleColors(canvas(), scale, box)
-    const y = line.baseline - baselineRatio(line) * line.size
-    openSession({ kind: 'line', line, bg, fg, y })
+    store().select(null)
+    // La police d'origine, si elle est installée, garde au texte exactement son apparence
+    const systemFont = (await findSystemFont(line.pdfFont, line.bold, line.italic))?.id
+    const look = { ...line, systemFont }
+    const y = line.baseline - baselineRatio(look) * line.size
+    const scaleX = widthScale(look, line.size, line.text, line.right - line.x)
+    openSession({ kind: 'line', line, bg, fg, y, scaleX, systemFont })
   }
 
   const finishSession = (text: string | null) => {
@@ -354,7 +361,7 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
       if (clean.trim()) s.update(tabId, o.id, { text: clean })
       else s.remove(tabId, [o.id])
     } else {
-      const { line, bg, fg, y } = current
+      const { line, bg, fg, y, scaleX, systemFont } = current
       if (clean === line.text) return
       const coverId = generateId()
       const objs: EditObject[] = [
@@ -380,6 +387,8 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
           y,
           text: clean,
           fontSize: line.size,
+          scaleX,
+          systemFont,
           font: line.font,
           bold: line.bold,
           italic: line.italic,
@@ -488,6 +497,8 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
               top: px(o.y),
               font: cssFont(o, px(o.fontSize)),
               lineHeight: LINE_HEIGHT,
+              transform: o.scaleX && o.scaleX !== 1 ? `scaleX(${o.scaleX})` : undefined,
+              transformOrigin: '0 0',
               color: o.color,
               pointerEvents: mode && (selectable || tool === 'text') ? 'auto' : 'none',
               cursor: tool === 'select' ? 'move' : 'text',
@@ -517,7 +528,7 @@ export const PageEditLayer = React.memo(function PageEditLayer({ tabId, pageNum,
             onPointerDown={(e) => {
               e.preventDefault()
               e.stopPropagation()
-              editLine(line)
+              void editLine(line)
             }}
           />
         )
@@ -678,7 +689,7 @@ function TextSessionEditor({
   let x: number
   let y: number
   let initial = ''
-  let look: Pick<TextObject, 'font' | 'bold' | 'italic' | 'color' | 'fontSize'>
+  let look: Pick<TextObject, 'font' | 'bold' | 'italic' | 'color' | 'fontSize' | 'scaleX' | 'systemFont'>
   let cover: { x: number; y: number; w: number; h: number; color: string } | null = null
 
   if (session.kind === 'new') {
@@ -696,7 +707,7 @@ function TextSessionEditor({
     x = line.x
     y = session.y
     initial = line.text
-    look = { font: line.font, bold: line.bold, italic: line.italic, color: fg, fontSize: line.size }
+    look = { font: line.font, bold: line.bold, italic: line.italic, color: fg, fontSize: line.size, scaleX: session.scaleX, systemFont: session.systemFont }
     cover = { x: line.x - 1, y: line.top - 1, w: line.right - line.x + 2, h: line.bottom - line.top + 2, color: bg }
   }
 
@@ -737,6 +748,8 @@ function TextSessionEditor({
           minWidth: look.fontSize * scale,
           font: cssFont(look, look.fontSize * scale),
           lineHeight: LINE_HEIGHT,
+          transform: look.scaleX && look.scaleX !== 1 ? `scaleX(${look.scaleX})` : undefined,
+          transformOrigin: '0 0',
           color: look.color,
           pointerEvents: 'auto',
           cursor: 'text',

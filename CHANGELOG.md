@@ -9,6 +9,7 @@ Le format suit [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/) et le pr
 
 - Mode **Annoter** : surlignage, soulignement et barré du texte sélectionné, zones de texte libres (police, taille, gras, italique, couleur), dessin à main levée, rectangles, ellipses, lignes, flèches et images
 - Mode **Édition ultra** : clic sur une ligne du PDF pour en modifier ou supprimer le texte, avec reprise de la police, de la taille et des couleurs d'origine ; gomme pour effacer une zone
+- Le texte modifié reprend la police d'origine quand elle est installée sur l'ordinateur (intégrée au PDF enregistré) ; sinon, une police standard calibrée pour garder la largeur de la ligne
 - Le texte remplacé ou effacé est retiré du flux de contenu du PDF : il n'est plus ni visible, ni copiable, ni extractible
 - Sélection, déplacement et redimensionnement des éléments ajoutés, annulation et rétablissement
 - Enregistrement en place ou sous un nouveau nom, avertissement avant de fermer un document modifié

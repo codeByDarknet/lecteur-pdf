@@ -29,6 +29,7 @@ import { Separator } from '../ui/separator'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip'
 import { cn } from '@/lib/utils'
 import { FONT_LABELS } from '@/lib/pdfEditing'
+import { systemFontLabel } from '@/lib/systemFonts'
 import { useEditStore } from '@/store/useEditStore'
 import type { EditObject, EditTool, FontKey, TextObject } from '@/types/edit'
 
@@ -106,9 +107,12 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
     if (patch.strokeWidth && (selected.type === 'shape' || selected.type === 'ink')) objectPatch.width = patch.strokeWidth
     if (selected.type === 'text') {
       if (patch.fontSize) objectPatch.fontSize = patch.fontSize
-      if (patch.font) objectPatch.font = patch.font
       if (patch.bold !== undefined) objectPatch.bold = patch.bold
       if (patch.italic !== undefined) objectPatch.italic = patch.italic
+      // Autre police ou autre style : on quitte la police reprise du PDF, et son étirement ne vaut plus
+      if (patch.font || patch.bold !== undefined || patch.italic !== undefined) {
+        Object.assign(objectPatch, { font: patch.font ?? selected.font, scaleX: 1, systemFont: undefined })
+      }
     }
     if (Object.keys(objectPatch).length) update(tabId, selected.id, objectPatch)
   }
@@ -204,10 +208,11 @@ export function EditToolbar({ tabId, saving, canSaveInPlace, onSave, onClose }: 
       {showText && (
         <div className="flex items-center gap-1 px-1">
           <select
-            value={current.font}
-            onChange={(e) => applyStyle({ font: e.target.value as FontKey })}
+            value={selectedText?.systemFont ? 'system' : current.font}
+            onChange={(e) => e.target.value !== 'system' && applyStyle({ font: e.target.value as FontKey })}
             className="h-6 rounded border border-border bg-background px-1 text-xs"
           >
+            {selectedText?.systemFont && <option value="system">{systemFontLabel(selectedText.systemFont)}</option>}
             {(Object.keys(FONT_LABELS) as FontKey[]).map((f) => (
               <option key={f} value={f}>{FONT_LABELS[f]}</option>
             ))}

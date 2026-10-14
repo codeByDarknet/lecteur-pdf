@@ -4,6 +4,7 @@ import {
   PDFDocument,
   PDFFont,
   StandardFonts,
+  concatTransformationMatrix,
   degrees,
   popGraphicsState,
   pushGraphicsState,
@@ -13,6 +14,8 @@ import {
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist'
 import type { EditObject, FontKey, Rect, TextObject } from '@/types/edit'
 import { removeCoveredText } from './pdfRedact'
+import { systemFontBytes, systemFontFamily } from './systemFonts'
+import fontkit from '@pdf-lib/fontkit'
 
 export const LINE_HEIGHT = 1.2
 export const HIGHLIGHT_OPACITY = 0.4
@@ -29,8 +32,13 @@ export const FONT_LABELS: Record<FontKey, string> = {
   courier: 'Mono (Courier)',
 }
 
-export const cssFont = (t: Pick<TextObject, 'font' | 'bold' | 'italic'>, size: number) =>
-  `${t.italic ? 'italic ' : ''}${t.bold ? 'bold ' : ''}${size}px ${CSS_FONTS[t.font]}`
+type FontLook = Pick<TextObject, 'font' | 'bold' | 'italic' | 'systemFont'>
+
+// Une police installée est déjà la bonne variante (grasse, italique) : pas de style simulé
+export const cssFont = (t: FontLook, size: number) =>
+  t.systemFont
+    ? `${size}px "${systemFontFamily(t.systemFont)}", ${CSS_FONTS[t.font]}`
+    : `${t.italic ? 'italic ' : ''}${t.bold ? 'bold ' : ''}${size}px ${CSS_FONTS[t.font]}`
 
 let measureCtx: CanvasRenderingContext2D | null = null
 const ctx = () => (measureCtx ??= document.createElement('canvas').getContext('2d')!)
@@ -38,8 +46,8 @@ const ctx = () => (measureCtx ??= document.createElement('canvas').getContext('2
 // Position de la ligne de base dans une ligne CSS de hauteur LINE_HEIGHT, en fraction de la taille de police.
 // Sert à placer le texte enregistré exactement là où il apparaît à l'écran.
 const baselineCache = new Map<string, number>()
-export function baselineRatio(t: Pick<TextObject, 'font' | 'bold' | 'italic'>): number {
-  const key = `${t.font}${t.bold}${t.italic}`
+export function baselineRatio(t: FontLook): number {
+  const key = `${t.font}${t.bold}${t.italic}${t.systemFont ?? ''}`
   const cached = baselineCache.get(key)
   if (cached !== undefined) return cached
   const c = ctx()
@@ -52,11 +60,22 @@ export function baselineRatio(t: Pick<TextObject, 'font' | 'bold' | 'italic'>): 
   return ratio
 }
 
+// La police de remplacement n'a pas la chasse de la police d'origine (DejaVu Sans est 13 % plus large
+// qu'Helvetica, par exemple) : on calcule l'étirement qui redonne à la ligne sa largeur d'origine.
+export function widthScale(t: FontLook, size: number, text: string, width: number): number {
+  const c = ctx()
+  c.font = cssFont(t, size)
+  const measured = c.measureText(text).width
+  if (!measured || !text.trim()) return 1
+  const k = width / measured
+  return Math.abs(k - 1) < 0.015 ? 1 : clamp(k, 0.75, 1.35)
+}
+
 export function textBox(t: TextObject): Rect {
   const c = ctx()
   c.font = cssFont(t, t.fontSize)
   const lines = t.text.split('\n')
-  const w = Math.max(t.fontSize * 0.5, ...lines.map((l) => c.measureText(l).width))
+  const w = Math.max(t.fontSize * 0.5, ...lines.map((l) => c.measureText(l).width * (t.scaleX ?? 1)))
   return { x: t.x, y: t.y, w, h: lines.length * t.fontSize * LINE_HEIGHT }
 }
 
@@ -190,6 +209,7 @@ export interface SourceLine {
   font: FontKey
   bold: boolean
   italic: boolean
+  pdfFont: string // nom de la police dans le PDF, pour retrouver la police installée
 }
 
 const multiply = (m: number[], n: number[]) => [
@@ -277,6 +297,7 @@ export async function extractSourceLines(page: PDFPageProxy): Promise<SourceLine
         top: baseline - ascent * size,
         bottom: baseline - descent * size,
         ...guessFont(style.fontFamily, realName),
+        pdfFont: realName,
       }
     }
     if (item.hasEOL) flush()
@@ -310,8 +331,21 @@ const encodable = (font: PDFFont, text: string) => {
 export async function exportEditedPdf(original: Uint8Array, source: PDFDocumentProxy, objects: EditObject[]): Promise<Uint8Array> {
   const doc = await PDFDocument.load(original, { ignoreEncryption: true })
   const pages = doc.getPages()
-  const fonts = new Map<StandardFonts, PDFFont>()
+  const fonts = new Map<string, PDFFont>()
   const font = async (t: TextObject) => {
+    const bytes = t.systemFont ? systemFontBytes(t.systemFont) : undefined
+    if (bytes) {
+      if (!fonts.has(t.systemFont!)) {
+        try {
+          doc.registerFontkit(fontkit)
+          fonts.set(t.systemFont!, await doc.embedFont(bytes, { subset: true }))
+        } catch {
+          /* police non intégrable : police standard */
+        }
+      }
+      const embedded = fonts.get(t.systemFont!)
+      if (embedded) return embedded
+    }
     const name = STANDARD[t.font][(t.bold ? 1 : 0) + (t.italic ? 2 : 0)]
     if (!fonts.has(name)) fonts.set(name, await doc.embedFont(name))
     return fonts.get(name)!
@@ -423,15 +457,22 @@ export async function exportEditedPdf(original: Uint8Array, source: PDFDocumentP
       case 'text': {
         const f = await font(o)
         const base = baselineRatio(o) * o.fontSize
+        const sx = o.scaleX ?? 1
+        const angle = (vp.rotation * Math.PI) / 180
         o.text.split('\n').forEach((line, i) => {
           if (!line) return
-          page.drawText(encodable(f, line), {
-            ...P(o.x, o.y + i * o.fontSize * LINE_HEIGHT + base),
-            size: o.fontSize,
-            font: f,
-            color: color(o.color),
-            rotate,
-          })
+          const at = P(o.x, o.y + i * o.fontSize * LINE_HEIGHT + base)
+          const options = { size: o.fontSize, font: f, color: color(o.color) }
+          if (sx === 1) {
+            page.drawText(encodable(f, line), { ...at, ...options, rotate })
+            return
+          }
+          // Repère du texte : origine sur la ligne de base, rotation de la page, étirement horizontal
+          const cos = Math.cos(angle)
+          const sin = Math.sin(angle)
+          page.pushOperators(pushGraphicsState(), concatTransformationMatrix(sx * cos, sx * sin, -sin, cos, at.x, at.y))
+          page.drawText(encodable(f, line), { x: 0, y: 0, ...options })
+          page.pushOperators(popGraphicsState())
         })
         break
       }
